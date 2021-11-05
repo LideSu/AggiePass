@@ -3,7 +3,7 @@ This file contains all the functions needed for
 new user registration.
 
 Registration process:
-- Create a new user id -> store to authentication database
+- Create a new user id (read UID)-> store to authentication database
 - Generate a random string key
 - Write to rfid tag
 - User create a custom password
@@ -12,7 +12,55 @@ Registration process:
   to the password management screen.
 """
 
+from os import read
+import serial
+
+from lib.database import mydb as database
+from constant import database_name, authentication_tab
+
+# Current UID function for reading, will be changed in the future
 
 
+def read_uid_from_tag(ser: serial.Serial) -> str:
+    while True:
+        try:
+            ser_byte = (ser.readline().decode(
+                'utf-8').strip('\n').strip().split(':'))
+            if 'Card UID' in ser_byte:
+                UID = ''.join(ser_byte[1].split())
+                return UID
+            return None
+
+        except KeyboardInterrupt as e:
+            print(e)
+            return None
 
 
+def write_string_to_tag(ser: serial.Serial) -> bool:
+    return False
+
+
+def new_uid_to_database(
+        uid: str, db: database, hashed_pwd: str, salt: str) -> bool:
+    if (not db.uid_exist(uid)):
+        db.insert(authentication_tab, )
+    pass
+
+
+def password_to_database(uid: str, password: str) -> bool:
+    pass
+
+
+def forge_secret_key(aes_key: str, password: str) -> str:
+    return ''
+
+
+if __name__ == '__main__':
+    # Establish serial connection
+    ser = serial.Serial('/dev/ttyUSB0', 9600)
+    ser.flushInput()
+    print(read_uid_from_tag(ser))
+
+    # Establish database connection
+    db = database(database_name)
+    db.connect()
