@@ -8,19 +8,21 @@ https://www.tutorialspoint.com/postgresql/index.htm
 
 
 import psycopg2
+from lib.constant import (
+    authentication_tab, authentication_primary_key,
+    database_account)
 
 # Connect to the database
 # Create tables
 # Read from database (return a pandas dataframe)
 # Write to database
 
-
 class mydb:
     def __init__(self, db):
         self.db = db
         self.conn = None
 
-    def connect(self, user='public_user'):
+    def connect(self, user=database_account):
         self.user = user
         self.conn = psycopg2.connect(
             "dbname={} user={} password=".format(self.db, user))
@@ -170,3 +172,10 @@ class mydb:
         self.conn.close()
         self.conn = psycopg2.connect(
             "dbname={} user={} password=".format(self.db, self.user))
+
+    def uid_exist(self, uid) -> bool:
+        cur = self.conn.cursor()
+        cur.execute("SELECT {} FROM {} WHERE {} = {}".format(
+            authentication_primary_key, authentication_tab,
+            authentication_primary_key, uid))
+        return cur.fetchone() is not None
