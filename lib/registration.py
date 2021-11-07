@@ -12,11 +12,11 @@ Registration process:
   to the password management screen.
 """
 
-from os import read
 import serial
 
 from lib.database import mydb as database
-from constant import database_name, authentication_tab
+from lib.constant import database_name, authentication_tab
+import lib.encryption
 
 # Current UID function for reading, will be changed in the future
 
@@ -45,15 +45,6 @@ def new_uid_to_database(
     if (not db.uid_exist(uid)):
         db.insert(authentication_tab, )
     pass
-
-
-def password_to_database(uid: str, password: str) -> bool:
-    pass
-
-
-def forge_secret_key(aes_key: str, password: str) -> str:
-    return ''
-
 
 if __name__ == '__main__':
     # Establish serial connection

@@ -1,7 +1,7 @@
 """This file contains all the basic credentials."""
 
 # ===============DATABASE AUTHENTICATION===============
-database_name = 'password_vault'
+database_name = 'password_manager'
 database_account = 'public_user'
 
 # ===============DATABASE SCHEMA===============

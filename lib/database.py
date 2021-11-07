@@ -8,6 +8,9 @@ https://www.tutorialspoint.com/postgresql/index.htm
 
 
 import psycopg2
+import pandas as pd
+
+
 from lib.constant import (
     authentication_tab, authentication_primary_key,
     database_account)
@@ -16,6 +19,7 @@ from lib.constant import (
 # Create tables
 # Read from database (return a pandas dataframe)
 # Write to database
+
 
 class mydb:
     def __init__(self, db):
@@ -179,3 +183,6 @@ class mydb:
             authentication_primary_key, authentication_tab,
             authentication_primary_key, uid))
         return cur.fetchone() is not None
+
+    def user_vault(self, uid) -> pd.DataFrame:
+        pass

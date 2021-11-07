@@ -39,10 +39,26 @@ def random_str_gen(n=32):
     return secrets.token_urlsafe(n)
 
 
-def forge_secret_key(rfid_key: str, pin: str):
-    '''
-    Return a hashed secret key used to do AES encryption 
-    and decryption. Based on given rfid key and given pin.
-    '''
-    forged_key = rfid_key[0:-len(pin)] + pin
-    return hashlib.sha3_512(forged_key)
+def forge_secret_key(tag_random_str: str, pin: str) -> str:
+    """
+    This function merges the tag random string with the 
+    pin, then hash them using SHA3-512 to create the final 
+    secret key for unlock a user's password vault.
+    """
+    merged_key = tag_random_str[0:-len(pin)] + pin
+    m = hashlib.sha3_256(merged_key.encode('utf-8'))
+    return m.hexdigest()
+
+
+def encrypt_data(secret_key: str, data: str):
+    aes = AESCipher(secret_key)
+    return aes.encrypt(data)
+
+
+def decrypt_data(secret_key: str, data: str):
+    aes = AESCipher(secret_key)
+    return aes.decrypt(data)
+
+
+if __name__ == '__main__':
+    print(random_str_gen())

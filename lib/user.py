@@ -1,2 +1,3 @@
 class User:
-   def __init__()
+   def __init__():
+      pass
