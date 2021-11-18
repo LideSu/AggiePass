@@ -42,6 +42,11 @@ MFRC522::MIFARE_Key key;
 /**
  * Initialize.
  */
+
+const byte numChars = 64;
+char receivedChars[numChars];
+boolean newData = false;
+
 void setup() {
     Serial.begin(9600); // Initialize serial communications with the PC
     while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
@@ -94,12 +99,15 @@ void loop() {
     // that is: sector #1, covering block #4 up to and including block #7
     byte sector         = 1;
     byte blockAddr      = 4;
-    byte dataBlock[]    = {
-        0xff, 0xff, 0xff, 0xff, //  1,  2,   3,  4,
-        0x05, 0x06, 0xff, 0xff, //  5,  6,   7,  8,
-        0x09, 0x0a, 0xff, 0xff, //  9, 10, 255, 11,
-        0x0c, 0x0d, 0xff, 0xff  // 12, 13, 14, 15
-    };
+    Serial.println("<Arduino is ready>");
+    delay(10);
+    recvWithEndMarker();
+    showNewData();
+    byte dataBlock[numChars];
+    byte i;
+    for(i = 0; i < sizeof(receivedChars); i++){
+      dataBlock[i] = receivedChars[i];
+    }
     byte trailerBlock   = 7;
     MFRC522::StatusCode status;
     byte buffer[18];
@@ -120,16 +128,16 @@ void loop() {
     Serial.println();
 
     // Read data from the block
-    Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
-    Serial.println(F(" ..."));
-    status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-    if (status != MFRC522::STATUS_OK) {
-        Serial.print(F("MIFARE_Read() failed: "));
-        Serial.println(mfrc522.GetStatusCodeName(status));
-    }
-    Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
-    dump_byte_array(buffer, 16); Serial.println();
-    Serial.println();
+    //Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
+    //Serial.println(F(" ..."));
+    //status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+    //if (status != MFRC522::STATUS_OK) {
+    //    Serial.print(F("MIFARE_Read() failed: "));
+    //    Serial.println(mfrc522.GetStatusCodeName(status));
+    //}
+    //Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
+    //dump_byte_array(buffer, 16); Serial.println();
+    //Serial.println();
 
     // Authenticate using key B
     Serial.println(F("Authenticating again using key B..."));
@@ -199,4 +207,36 @@ void dump_byte_array(byte *buffer, byte bufferSize) {
         Serial.print(buffer[i] < 0x10 ? " 0" : " ");
         Serial.print(buffer[i], HEX);
     }
+}
+
+void recvWithEndMarker(){
+  static byte ndx = 0;
+  char endMarker = '\n';
+  char rc;
+
+  while(Serial.available() > 0 && newData == false){
+    rc = Serial.read();
+
+    if(rc != endMarker){
+      receivedChars[ndx] = rc;
+      ndx++;
+      if(ndx >= numChars){
+        ndx = numChars - 1;
+      }
+    }
+    else{
+      receivedChars[ndx] = '\0';
+      ndx = 0;
+      newData = true;
+    }
+  }
+}
+
+void showNewData()
+{
+  if(newData = true){
+    Serial.println("This just in...");
+    Serial.println(receivedChars);
+    newData = false;
+  }
 }
