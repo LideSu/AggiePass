@@ -11,7 +11,7 @@ import psycopg2
 import pandas as pd
 
 
-from lib.constant import (
+from constant import (
     authentication_tab, authentication_primary_key,
     database_account)
 
@@ -179,9 +179,9 @@ class mydb:
 
     def uid_exist(self, uid) -> bool:
         cur = self.conn.cursor()
-        cur.execute("SELECT {} FROM {} WHERE {} = {}".format(
-            authentication_primary_key, authentication_tab,
-            authentication_primary_key, uid))
+        cur.execute("SELECT {} FROM {} WHERE {} = '{}'".format(
+            authentication_primary_key[0], authentication_tab,
+            authentication_primary_key[0], uid))
         return cur.fetchone() is not None
 
     def user_vault(self, uid) -> pd.DataFrame:
