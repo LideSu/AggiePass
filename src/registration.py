@@ -66,8 +66,8 @@ if __name__ == '__main__':
 
     # Test
     acc_des = 'This is a test account.'
-    acc_username = 'minh.luu@tamu.edu'
-    acc_password = 'Abc123123123'
+    acc_username = 'minh.l12312312321312uu@tamu.edu'
+    acc_password = 'Abc12312311231231232123'
     secret_msg = 'Hello :)'
     enc_acc_dess = enc.encrypt_data(
         'b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6',
@@ -79,6 +79,7 @@ if __name__ == '__main__':
         'b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6',
         data=acc_password)
     
+    # Test putting encrypted data to the database
     try:
         db.insert(
             password_vault_tab,

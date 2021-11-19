@@ -1,6 +1,3 @@
-
-
-
 if __name__ == '__main__':
     key = random_str_gen(32)
     print(key)

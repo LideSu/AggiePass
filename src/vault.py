@@ -1,14 +1,20 @@
 """
 
 """
-from lib.database import mydb as database
-from lib.constant import (
+from database import mydb as database
+from constant import (
     password_vault_tab, password_vault_col, password_vault_col_typ,
     password_vault_primary_key)
 
 # Notes:
 #   - There should be some forms of error handling when the user leaves a field blank
 
+class Account:
+    def __init__(self, uid):
+        self.uid = uid
+        self.decryption_key = ''
+        self.password_vaults_db = database(password_vault_tab)
+        self.password_vaults_db.connect()
 
 class Vault:
     def __init__(self, uid):

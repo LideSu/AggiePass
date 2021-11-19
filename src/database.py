@@ -8,12 +8,15 @@ https://www.tutorialspoint.com/postgresql/index.htm
 
 
 import psycopg2
+from sqlalchemy import create_engine
 import pandas as pd
+import pandas.io.sql as psqlio
+
 
 
 from constant import (
-    authentication_tab, authentication_primary_key,
-    database_account)
+    database_account, authentication_tab, authentication_primary_key,
+    password_vault_tab, password_vault_primary_key)
 
 # Connect to the database
 # Create tables
@@ -31,6 +34,10 @@ class mydb:
         self.conn = psycopg2.connect(
             "dbname={} user={} password=".format(self.db, user))
         self.conn.autocommit = True
+
+    def getconn(self):
+        return self.conn
+        
 
     def new_table(self, tb_name, columns, col_type, primary_key,
                   constraints=[]):
@@ -185,4 +192,22 @@ class mydb:
         return cur.fetchone() is not None
 
     def user_vault(self, uid) -> pd.DataFrame:
-        pass
+        """
+        Read user's password vault and export it to a dataframe.
+        This only contains ENCRYPTED dataframe.
+        """
+        query = "SELECT * FROM {} WHERE {} = '{}'".format(
+            password_vault_tab, password_vault_primary_key[0], uid)
+        return psqlio.read_sql_query(query, self.conn).set_index('uid')
+
+    def update_user_vault(self, uid, data: pd.DataFrame):
+        """
+        Export user's password vault data frame to database.
+        Remove the current password vault in database then
+        export the most up-to-date version.
+
+        This function should only export ENCRYPTED dataframe.
+        """
+        engine = create_engine('postgresql+psycopg2://', creator=self.getconn)
+        self.delete_row(password_vault_tab, condition='uid=\'{}\''.format(uid))
+        data.to_sql(password_vault_tab, engine, if_exists='append')
