@@ -198,7 +198,7 @@ class mydb:
         """
         query = "SELECT * FROM {} WHERE {} = '{}'".format(
             password_vault_tab, password_vault_primary_key[0], uid)
-        return psqlio.read_sql_query(query, self.conn).set_index('uid')
+        return psqlio.read_sql_query(query, self.conn)
 
     def update_user_vault(self, uid, data: pd.DataFrame):
         """
@@ -209,5 +209,9 @@ class mydb:
         This function should only export ENCRYPTED dataframe.
         """
         engine = create_engine('postgresql+psycopg2://', creator=self.getconn)
-        self.delete_row(password_vault_tab, condition='uid=\'{}\''.format(uid))
-        data.to_sql(password_vault_tab, engine, if_exists='append')
+        data = data.set_index('uid') # Strip default index
+
+        # Only update if index of given dataframe match the specified uid.
+        if (data.index[0] == uid):
+            self.delete_row(password_vault_tab, condition='uid=\'{}\''.format(uid))
+            data.to_sql(password_vault_tab, engine, if_exists='append')

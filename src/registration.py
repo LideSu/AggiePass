@@ -65,9 +65,9 @@ if __name__ == '__main__':
     print(secret_key)
 
     # Test
-    acc_des = 'This is a test account.'
-    acc_username = 'minh.l12312312321312uu@tamu.edu'
-    acc_password = 'Abc12312311231231232123'
+    acc_des = 'This is a test account.2'
+    acc_username = '2'
+    acc_password = '2'
     secret_msg = 'Hello :)'
     enc_acc_dess = enc.encrypt_data(
         'b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6',

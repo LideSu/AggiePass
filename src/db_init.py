@@ -1,9 +1,9 @@
-from lib.database import mydb as database
-from lib.constant import database_name
-from lib.constant import (
+from database import mydb as database
+from constant import database_name
+from constant import (
     password_vault_tab, password_vault_col, password_vault_col_typ,
     password_vault_primary_key)
-from lib.constant import (
+from constant import (
     authentication_tab, authentication_col, authentication_col_typ,
     authentication_primary_key)
 

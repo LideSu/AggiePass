@@ -3,14 +3,22 @@ import psycopg2
 from database import mydb as database
 from constant import database_name
 from constant import (password_vault_tab, authentication_tab)
-from encrypt_tools import forge_secret_key, encrypt_data, decrypt_data
+from encrypt_tools import forge_secret_key, encrypt_vault, decrypt_vault
 
 
 password_manager_db = database(database_name)
 password_manager_db.connect()
-print()
+
 df = password_manager_db.user_vault('123123')
-print(password_manager_db.update_user_vault('123123', df))
+print(df)
+# df = decrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
+# print(df)
+df = encrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
+print(df)
+# df = decrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
+# print(df)
+# print(df)
+password_manager_db.update_user_vault('123123', df)
 # try:
 #     # password_manager_db.insert(
 #     #     password_vault_tab,
@@ -22,7 +30,6 @@ print(password_manager_db.update_user_vault('123123', df))
 #          'pin': 'adasddasd'})
 # except psycopg2.Error as e:
 #     print(e, end='')
-
 
 
 # print(

@@ -1,3 +1,4 @@
+from pandas import DataFrame
 import secrets
 import base64
 import hashlib
@@ -51,6 +52,12 @@ def forge_secret_key(tag_random_str: str, pin: str) -> str:
     return m.hexdigest()
 
 
+def generate_pin_salt():
+    return bcrypt.gensalt()
+
+
+# Basic encryption and decryption
+# AES-256 with CBC mode
 def encrypt_data(secret_key: str, data: str):
     aes = AESCipher(secret_key)
     return aes.encrypt(data).decode('utf-8')
@@ -60,9 +67,25 @@ def decrypt_data(secret_key: str, data: str):
     aes = AESCipher(secret_key)
     return aes.decrypt(data)
 
+# DF encryption and decryption
+def decrypt_vault(secret_key: str, df: DataFrame) -> DataFrame:
+    df.acc_description = df.apply(lambda x: decrypt_data(
+        secret_key, x.acc_description), axis=1)
+    df.acc_username = df.apply(lambda x: decrypt_data(
+        secret_key, x.acc_username), axis=1)
+    df.acc_password = df.apply(lambda x: decrypt_data(
+        secret_key, x.acc_password), axis=1)
+    return df
 
-def generate_pin_salt():
-    return bcrypt.gensalt()
+
+def encrypt_vault(secret_key: str, df: DataFrame) -> DataFrame:
+    df.acc_description = df.apply(lambda x: encrypt_data(
+        secret_key, x.acc_description), axis=1)
+    df.acc_username = df.apply(lambda x: encrypt_data(
+        secret_key, x.acc_username), axis=1)
+    df.acc_password = df.apply(lambda x: encrypt_data(
+        secret_key, x.acc_password), axis=1)
+    return df
 
 
 if __name__ == '__main__':
