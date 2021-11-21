@@ -25,9 +25,9 @@ class welcome(QWidget):
       self.button_register = QPushButton("REGISTER")  # add the submit button
 
       # modify the stylesheets of the titles.
-      self.title.setStyleSheet("color: white; font: bold 50px")
-      self.title2.setStyleSheet("color: white; font: bold 30px")
-      self.title3.setStyleSheet("color: white; font: bold 30px")
+      self.title.setStyleSheet("color: white; font: bold 25px")
+      self.title2.setStyleSheet("color: white; font: bold 15px")
+      self.title3.setStyleSheet("color: white; font: bold 15px")
 
       # modify the stylesheet of the edit bar.
       self.edit.setFixedWidth(400)
@@ -117,9 +117,9 @@ class registration(QWidget):
       self.button_home = QPushButton("HOME")  # add the submit button
 
       # modify the stylesheets of the titles.
-      self.title.setStyleSheet("color: white; font: bold 50px")
-      self.title2.setStyleSheet("color: white; font: bold 30px")
-      self.title3.setStyleSheet("color: white; font: bold 30px")
+      self.title.setStyleSheet("color: white; font: bold 25px")
+      self.title2.setStyleSheet("color: white; font: bold 15px")
+      self.title3.setStyleSheet("color: white; font: bold 15px")
 
       # modify the stylesheet of the edit bar.
       self.edit.setFixedWidth(400)
@@ -181,7 +181,7 @@ class registration(QWidget):
          self.hm = None
 
 
-data = {'uid':['121', '122', '123', '124', '125'],
+data = {
         'acc_description':['dafergdsgagdadsa1234', 'dsa4dsa32dgsat4', '2fdsat4eadfa454', '2efdsa4ty5yhts', 'dsa234gdfsa4ytqa'],
         'acc_username':['sa2rfdsa32gsa', 'a32t2dsa4tf', '2rgdfsaaw34gra', 'as32fdsa4ygfdsa', 'q2fdsa32ytgfdas'],
         'acc_password':['2esda32tdsa3tgrsae312sa3', 'as4esagesa32afdsafdsa', '1ea43wadasf43ag4a4', '2gsa33at4afdsa', '23ta4a4ygs4ay4afds'] 
@@ -248,8 +248,8 @@ class manager(QWidget):
       self.tableWidget.setFixedHeight(500)
 
       # row and column count.
-      self.tableWidget.setRowCount(len(df.uid))
-      self.tableWidget.setColumnCount(4)
+      self.tableWidget.setRowCount(len(df.acc_username))
+      self.tableWidget.setColumnCount(3)
 
       # set the column headers.
       idx = 0
@@ -266,7 +266,9 @@ class manager(QWidget):
       # still need to set the size of table, this line only makes the table fill the rectangle with fixed size.
       self.tableWidget.horizontalHeader().setStretchLastSection(True)
       self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-   
+
+      self.tableWidget.setSelectionBehavior(QTableView.SelectRows)
+
       # return
       return self.tableWidget
 
