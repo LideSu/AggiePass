@@ -264,7 +264,9 @@ class manager(QWidget):
       # set the cell values.
       for i in range(self.tableWidget.rowCount()):
          for j in range(self.tableWidget.columnCount()):
-            self.tableWidget.setItem(i,j, QTableWidgetItem(pass_data[i][j]))
+            new_item = QTableWidgetItem(pass_data[i][j])
+            new_item.setForeground(QColor(255, 255, 255))
+            self.tableWidget.setItem(i,j, new_item)
       
       # stretch the header view to fill the window. 
       # still need to set the size of table, this line only makes the table fill the rectangle with fixed size.
