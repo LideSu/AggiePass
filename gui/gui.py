@@ -206,7 +206,8 @@ class manager(QWidget):
       # create a layout fot he window, and then add the widgets to the layout.
       layout = QVBoxLayout(self)
       layout.addWidget(self.button_home, alignment=Qt.AlignRight)
-      layout.addWidget(self.createTable(), alignment=Qt.AlignCenter)
+      layout.addWidget(self.createTable(), 1, alignment=Qt.AlignCenter)
+  
 
       # set the layout for the window
       self.setLayout(layout)
@@ -244,8 +245,8 @@ class manager(QWidget):
       # self.tableWidget.horizontalScrollBar().setVisible(False)
 
       # sets the size of the table, we need to manually change the width and height to make it fill the window.
-      self.tableWidget.setFixedWidth(800)
-      self.tableWidget.setFixedHeight(500)
+      self.tableWidget.setFixedWidth(400)
+      self.tableWidget.setFixedHeight(600)
 
       # row and column count.
       self.tableWidget.setRowCount(len(df.acc_username))
@@ -266,10 +267,7 @@ class manager(QWidget):
       # still need to set the size of table, this line only makes the table fill the rectangle with fixed size.
       self.tableWidget.horizontalHeader().setStretchLastSection(True)
       self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
       self.tableWidget.setSelectionBehavior(QTableView.SelectRows)
-
-      # return
       return self.tableWidget
 
 def main():
