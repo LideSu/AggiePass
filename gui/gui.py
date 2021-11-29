@@ -248,8 +248,8 @@ class manager(QWidget):
       # self.tableWidget.horizontalScrollBar().setVisible(False)
 
       # sets the size of the table, we need to manually change the width and height to make it fill the window.
-      self.tableWidget.setFixedWidth(470)
-      self.tableWidget.setFixedHeight(200)
+      self.tableWidget.setFixedWidth(460)
+      self.tableWidget.setFixedHeight(150)
 
       # row and column count.
       self.tableWidget.setRowCount(len(df.acc_username))
