@@ -65,9 +65,9 @@ class welcome(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.showMaximized()
       self.setStyleSheet("background-color: #800000")
       self.setWindowFlag(Qt.FramelessWindowHint)
+      self.showMaximized()
 
       # no registration window yet.
       self.reg = None
@@ -157,9 +157,10 @@ class registration(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.showMaximized()
+
       self.setStyleSheet("background-color: #800000")
       self.setWindowFlag(Qt.FramelessWindowHint)
+      self.showMaximized()
 
       # no home window yet.
       self.hm = None
@@ -216,9 +217,9 @@ class manager(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.showMaximized()
       self.setStyleSheet("background-color: #800000")
       self.setWindowFlag(Qt.FramelessWindowHint)
+      self.showMaximized()
 
       # no home window yet.
       self.hm = None
@@ -241,11 +242,6 @@ class manager(QWidget):
       
       # this line prevents triggering edit once clicked on the cell.
       self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
-
-      # controls the scollbars.
-      # self.tableWidget.verticalHeader().setVisible(False)
-      # self.tableWidget.horizontalScrollBar().setDisabled(True)
-      # self.tableWidget.horizontalScrollBar().setVisible(False)
 
       # sets the size of the table, we need to manually change the width and height to make it fill the window.
       self.tableWidget.setFixedWidth(460)
@@ -273,7 +269,18 @@ class manager(QWidget):
       self.tableWidget.horizontalHeader().setStretchLastSection(True)
       self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
       self.tableWidget.setSelectionBehavior(QTableView.SelectRows)
+      self.tableWidget.selectionModel().selectionChanged.connect(self.selectionFunction)
       return self.tableWidget
+   
+   # Obtain the password on the selected row
+   def selectionFunction(self, selected):
+      # this marks the index of the selected row, might be useful later.
+      ix = selected.indexes()[0]
+
+      r = self.tableWidget.currentRow() # Get the index of the selected row.
+      password = self.tableWidget.item(r,2).text() # get the passowrd value based on the row number obtained above.
+      print(password)
+
 
 def main():
    app = QApplication(sys.argv)
