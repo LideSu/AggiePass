@@ -19,6 +19,6 @@ if __name__ == '__main__':
         print(s.decode("utf-8"))
         if(s.decode("utf-8") == "<Arduino is ready>"):
             print("sending")
-            ans = 'b_CFcfcf3zbN0eHrMQsuPfibEQ-NFFg4Hl7RVlWJLEs"\n"'
+            ans = 'sW6iRQE1lUMzBU2cpMtI6186tu6ruxeF\n'
             ans = ans.encode("utf-8")
             ser.write(ans)

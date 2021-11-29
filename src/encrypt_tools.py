@@ -34,7 +34,7 @@ class AESCipher(object):
         return s[:-ord(s[len(s)-1:])]
 
 
-def random_str_gen(n=32):
+def random_str_gen(n=24):
     '''
     Return a n-bit or n/8-byte key for AES encryption.
     '''
@@ -89,4 +89,5 @@ def encrypt_vault(secret_key: str, df: DataFrame) -> DataFrame:
 
 
 if __name__ == '__main__':
+    print(random_str_gen())
     print(generate_pin_salt())
