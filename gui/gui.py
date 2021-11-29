@@ -206,8 +206,11 @@ class manager(QWidget):
       # create a layout fot he window, and then add the widgets to the layout.
       layout = QVBoxLayout(self)
       layout.addWidget(self.button_home, alignment=Qt.AlignRight)
-      layout.addWidget(self.createTable(), 1, alignment=Qt.AlignCenter)
-  
+
+      layout_h = QHBoxLayout()
+      layout_h.addWidget(self.createTable(), stretch = 1, alignment=Qt.AlignCenter)
+
+      layout.addLayout(layout_h)
 
       # set the layout for the window
       self.setLayout(layout)
@@ -245,8 +248,8 @@ class manager(QWidget):
       # self.tableWidget.horizontalScrollBar().setVisible(False)
 
       # sets the size of the table, we need to manually change the width and height to make it fill the window.
-      self.tableWidget.setFixedWidth(470)
-      self.tableWidget.setFixedHeight(350)
+      # self.tableWidget.setFixedWidth(470)
+      # self.tableWidget.setFixedHeight(350)
 
       # row and column count.
       self.tableWidget.setRowCount(len(df.acc_username))
@@ -272,6 +275,10 @@ class manager(QWidget):
 
 def main():
    app = QApplication(sys.argv)
+   screen = app.primaryScreen()
+   print('Screen: %s' % screen.name())
+   rect = screen.availableGeometry()
+   print('Available: %d x %d' % (rect.width(), rect.height()))
    ex = welcome()
    ex.show()
    sys.exit(app.exec_())
