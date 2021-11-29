@@ -189,7 +189,6 @@ data = {
         }
 df = pd.DataFrame(data)
 pass_data = df.to_numpy()
-print(pass_data)
 
 # Define the manager page.
 class manager(QWidget):
