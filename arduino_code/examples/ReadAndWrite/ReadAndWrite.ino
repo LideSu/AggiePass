@@ -81,7 +81,7 @@ void loop() {
 
     // Show some details of the PICC (that is: the tag/card)
     //Serial.print(F("Card UID:"));
-    //dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+    dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     //Serial.println();
     //Serial.print(F("PICC type: "));
     MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
@@ -157,6 +157,7 @@ void loop() {
     //Serial.print(F("Writing data into block ")); Serial.print(blockAddr);
     //Serial.println(F(" ..."));
     //dump_byte_array(dataBlock, 16); Serial.println();
+    
     status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
     if (status != MFRC522::STATUS_OK) {
         //Serial.print(F("MIFARE_Write() failed: "));
@@ -204,9 +205,9 @@ void loop() {
     //Serial.println();
 
     // Dump the sector data
-    Serial.println(F("Current data in sector:"));
+    //Serial.println(F("Current data in sector:"));
     mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
-    Serial.println();
+    //Serial.println();
 
     // Halt PICC
     mfrc522.PICC_HaltA();
@@ -245,6 +246,7 @@ void recvWithEndMarker(){
       newData = true;
     }
   }
+ 
 }
 
 void showNewData()
