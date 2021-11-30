@@ -17,7 +17,7 @@ if __name__ == '__main__':
             s = ser.readline()
             s = s.strip()
             print(s.decode("utf-8"))
-            if(s.decode("utf-8") == "<Arduino is ready>"):
-                ans = 'y-ZJvvNagaB5b6UVGC66OZYZ40T8Sg_C\n'
+            if(s.decode("utf-8") == "Arduino is ready"):
+                ans = '=y-ZJvvNagaB5b6UVGC66OZYZ40T8Sg_C\n'
                 ans = ans.encode("utf-8")
                 ser.write(ans)

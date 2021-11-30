@@ -82,7 +82,7 @@ void loop() {
     // Show some details of the PICC (that is: the tag/card)
     //Serial.print(F("Card UID:"));
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
-    //Serial.println();
+    Serial.println();
     //Serial.print(F("PICC type: "));
     MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
     mfrc522.PICC_GetTypeName(piccType);
@@ -100,18 +100,22 @@ void loop() {
     byte sector         = 1;
     byte blockAddr      = 4;
     byte blockAddr2      = 5;
-    Serial.println("<Arduino is ready>");
+    Serial.println("Arduino is ready");
     delay(10);
     recvWithEndMarker();
     showNewData();
     byte dataBlock[numChars];
     byte endBlock[numChars];
+    byte firstChar[1];
     byte i;
-    for(i = 0; i < sizeof(receivedChars); i++){
-      dataBlock[i] = receivedChars[i];
+    for(i = 0; i < 1; i++){
+      firstChar[i] = receivedChars[i];
     }
     for(i = 0; i < sizeof(receivedChars); i++){
-      endBlock[i] = receivedChars[i+16];
+      dataBlock[i] = receivedChars[i+1];
+    }
+    for(i = 0; i < sizeof(receivedChars); i++){
+      endBlock[i] = receivedChars[i+17];
     }
     byte trailerBlock   = 7;
     MFRC522::StatusCode status;
@@ -146,6 +150,7 @@ void loop() {
 
     // Authenticate using key B
     //Serial.println(F("Authenticating again using key B..."));
+    if(firstChar[0] == '?'){
     status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_B, trailerBlock, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
        // Serial.print(F("PCD_Authenticate() failed: "));
@@ -173,6 +178,7 @@ void loop() {
     if (status != MFRC522::STATUS_OK) {
         //Serial.print(F("MIFARE_Write() failed: "));
         //Serial.println(mfrc522.GetStatusCodeName(status));
+    }
     }
     //Serial.println();
     // Read data from the block (again, should now be what we have written)
@@ -206,7 +212,9 @@ void loop() {
 
     // Dump the sector data
     //Serial.println(F("Current data in sector:"));
+    else{
     mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
+    }
     //Serial.println();
 
     // Halt PICC
