@@ -241,7 +241,9 @@ class manager(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.setStyleSheet("background-color: #800000")
+      self.setStyleSheet(
+      "background-color: #800000; QInputDialog{background-color: white;}"
+      )
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
@@ -269,7 +271,7 @@ class manager(QWidget):
 
       # sets the size of the table, we need to manually change the width and height to make it fill the window.
       self.tableWidget.setFixedWidth(460)
-      self.tableWidget.setFixedHeight(220)
+      self.tableWidget.setFixedHeight(240)
 
       # row and column count.
       self.tableWidget.setRowCount(len(df.acc_username))
