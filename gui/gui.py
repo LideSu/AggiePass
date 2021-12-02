@@ -241,7 +241,7 @@ class manager(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.setStyleSheet("background-color: #800000")
+      self.setStyleSheet("background-color: #800000; color: white")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
