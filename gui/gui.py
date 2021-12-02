@@ -195,23 +195,48 @@ class manager(QWidget):
    def __init__(self, parent=None):
       super(manager, self).__init__(parent)
 
+      self.button_export = QPushButton("SELECT")
+      self.button_add = QPushButton("ADD")        # add the add button
+      self.button_delete = QPushButton("DELETE")  # add the delete button
       self.button_home = QPushButton("HOME")      # add the home button
 
-      # modify the stylesheet of homebutton.
+      # modify the stylesheet of buttonS.
       self.button_home.clicked.connect(self.home)
       self.button_home.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
       self.button_home.setFixedWidth(80)
       self.button_home.setFixedHeight(30)
+      
+      self.button_add.clicked.connect(self.add)
+      self.button_add.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
+      self.button_add.setFixedWidth(80)
+      self.button_add.setFixedHeight(30)
 
-      # create a layout fot he window, and then add the widgets to the layout.
-      layout = QVBoxLayout(self)
-      layout.addWidget(self.button_home, alignment=Qt.AlignRight)
+      self.button_delete.clicked.connect(self.delete)
+      self.button_delete.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
+      self.button_delete.setFixedWidth(80)
+      self.button_delete.setFixedHeight(30)
+      
+      self.button_export.clicked.connect(self.export)
+      self.button_export.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
+      self.button_export.setFixedWidth(80)
+      self.button_export.setFixedHeight(30)
 
+      # create a horizontal layout to contain the table.
       layout_h = QHBoxLayout()
       layout_h.addWidget(self.createTable(), stretch = 1, alignment=Qt.AlignCenter)
 
-      layout.addLayout(layout_h)
+      # create a horizontal layout to contain the buttons.
+      layout_buttons = QHBoxLayout()
+      layout_buttons.addWidget(self.button_export)
+      layout_buttons.addWidget(self.button_add)
+      layout_buttons.addWidget(self.button_delete)
+      layout_buttons.addWidget(self.button_home)
 
+      # create a layout fot he window, and then add the widgets to the layout.
+      layout = QVBoxLayout(self)
+      layout.addLayout(layout_buttons)
+      layout.addLayout(layout_h)
+   
       # set the layout for the window
       self.setLayout(layout)
 
@@ -268,17 +293,42 @@ class manager(QWidget):
       self.tableWidget.horizontalHeader().setStretchLastSection(True)
       self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
       self.tableWidget.setSelectionBehavior(QTableView.SelectRows)
-      self.tableWidget.selectionModel().selectionChanged.connect(self.selectionFunction)
+      # self.tableWidget.selectionModel().selectionChanged.connect(self.selectionFunction)
       return self.tableWidget
    
    # Obtain the password on the selected row
-   def selectionFunction(self, selected):
+   def export(self, selected):
       # this marks the index of the selected row, might be useful later.
-      ix = selected.indexes()[0]
-
+      # ix = selected.indexes()[0]
       r = self.tableWidget.currentRow() # Get the index of the selected row.
       password = self.tableWidget.item(r,2).text() # get the passowrd value based on the row number obtained above.
       print(password)
+
+   def delete(self, selected):
+      # ix = selected.indexes()[0]
+      r = self.tableWidget.currentRow() # Get the index of the selected row.
+      self.tableWidget.removeRow(r)     # Remove the selected Row
+
+   def add(self):
+      des, done1 = QInputDialog.getText(
+         self, 'Add Password', 'Enter Description:')
+
+      username, done2 = QInputDialog.getText(
+         self, 'Add Password', 'Enter Username:') 
+
+      password, done3 = QInputDialog.getText(
+         self, 'Add Password', 'Enter Passoword:')
+
+      if done1 and done2 and done3:
+         rowPosition = self.tableWidget.rowCount()
+         self.tableWidget.insertRow(rowPosition)
+         self.tableWidget.setItem(rowPosition , 0, QTableWidgetItem(str(des)))
+         self.tableWidget.setItem(rowPosition , 1, QTableWidgetItem(str(username)))
+         self.tableWidget.setItem(rowPosition , 2, QTableWidgetItem(str(password)))
+  
+  
+               
+
 
 
 def main():
