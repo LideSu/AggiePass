@@ -241,7 +241,7 @@ class manager(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.setStyleSheet("background-color: #800000; color: white")
+      self.setStyleSheet("background-color: #800000;")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
@@ -310,7 +310,7 @@ class manager(QWidget):
       self.tableWidget.removeRow(r)     # Remove the selected Row
 
    def add(self):
-      userInput = QInputDialog()
+      userInput = QInputDialog(self)
       userInput.setStyleSheet("background-color: white")
 
       des, done1 = userInput.getText(
