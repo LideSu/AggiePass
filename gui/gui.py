@@ -5,7 +5,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import pandas as pd
  
- 
 # Define the welcome page.
 class welcome(QWidget):
 
@@ -241,7 +240,7 @@ class manager(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.setStyleSheet("background-color: #800000;")
+      self.setStyleSheet("background-color: #800000; QInputDialog{background-color:white}")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
