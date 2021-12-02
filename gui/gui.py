@@ -322,11 +322,24 @@ class manager(QWidget):
          self, 'Add Password', 'Enter Passoword:')
 
       if done1 and done2 and done3:
-         rowPosition = self.tableWidget.rowCount()
-         self.tableWidget.insertRow(rowPosition)
-         self.tableWidget.setItem(rowPosition , 0, QTableWidgetItem(str(des)))
-         self.tableWidget.setItem(rowPosition , 1, QTableWidgetItem(str(username)))
-         self.tableWidget.setItem(rowPosition , 2, QTableWidgetItem(str(password)))
+         if (des != "" or username != "" or password != ""):
+            # insert a new empty row at the bottom of the table
+            rowPosition = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(rowPosition)
+
+            # create new values for the row
+            new_des = QTableWidgetItem(str(des))
+            new_username = QTableWidgetItem(str(username))
+            new_pass = QTableWidgetItem(str(password))
+
+            # set up text colors for new description, username and password
+            new_des.setForeground(QColor(255, 255, 255))
+            new_username.setForeground(QColor(255, 255, 255))
+            new_pass.setForeground(QColor(255, 255, 255))
+
+            self.tableWidget.setItem(rowPosition , 0, new_des)
+            self.tableWidget.setItem(rowPosition , 1, new_username)
+            self.tableWidget.setItem(rowPosition , 2, new_pass)
   
 def main():
    app = QApplication(sys.argv)
