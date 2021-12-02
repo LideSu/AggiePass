@@ -20,7 +20,7 @@ class welcome(QWidget):
       # the third line of title
       self.title3 = QLabel("Please Enter Your PIN")
       # add the text edit bar, this will serve as the input box of PIN.
-      self.edit = QLineEdit("Enter PIN")
+      self.edit = QLineEdit()
       self.button_submit = QPushButton("SUBMIT")      # add the submit button
       self.button_register = QPushButton("REGISTER")  # add the submit button
 
@@ -112,7 +112,7 @@ class registration(QWidget):
       # the third line of title
       self.title3 = QLabel("Please Enter Your PIN")
       # add the text edit bar, this will serve as the input box of PIN.
-      self.edit = QLineEdit("Enter PIN")
+      self.edit = QLineEdit()
       self.button_submit = QPushButton("SUBMIT")      # add the submit button
       self.button_home = QPushButton("HOME")  # add the submit button
 
@@ -269,7 +269,7 @@ class manager(QWidget):
 
       # sets the size of the table, we need to manually change the width and height to make it fill the window.
       self.tableWidget.setFixedWidth(460)
-      self.tableWidget.setFixedHeight(170)
+      self.tableWidget.setFixedHeight(180)
 
       # row and column count.
       self.tableWidget.setRowCount(len(df.acc_username))
@@ -314,7 +314,7 @@ class manager(QWidget):
          self, 'Add Password', 'Enter Description:')
 
       username, done2 = QInputDialog.getText(
-         self, 'Add Password', 'Enter Username:') 
+         self, 'Add Password', 'Enter Username:')
 
       password, done3 = QInputDialog.getText(
          self, 'Add Password', 'Enter Passoword:')
@@ -326,11 +326,6 @@ class manager(QWidget):
          self.tableWidget.setItem(rowPosition , 1, QTableWidgetItem(str(username)))
          self.tableWidget.setItem(rowPosition , 2, QTableWidgetItem(str(password)))
   
-  
-               
-
-
-
 def main():
    app = QApplication(sys.argv)
    screen = app.primaryScreen()
