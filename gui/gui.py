@@ -242,7 +242,7 @@ class manager(QWidget):
 
       # modify the stylesheet of the window
       self.setStyleSheet(
-      "background-color: #800000; QInputDialog{background-color: white;}"
+      "background-color: #800000; QInputDialog{color: white}"
       )
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
@@ -320,6 +320,7 @@ class manager(QWidget):
 
       password, done3 = QInputDialog.getText(
          self, 'Add Password', 'Enter Passoword:')
+      
 
       if done1 and done2 and done3:
          if (des != "" or username != "" or password != ""):
@@ -328,9 +329,9 @@ class manager(QWidget):
             self.tableWidget.insertRow(rowPosition)
 
             # create new values for the row
-            new_des = QTableWidgetItem(str(des))
-            new_username = QTableWidgetItem(str(username))
-            new_pass = QTableWidgetItem(str(password))
+            new_des = QTableWidgetItem(des)
+            new_username = QTableWidgetItem(username)
+            new_pass = QTableWidgetItem(password)
 
             # set up text colors for new description, username and password
             new_des.setForeground(QColor(255, 255, 255))
