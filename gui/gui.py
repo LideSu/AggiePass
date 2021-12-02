@@ -241,9 +241,7 @@ class manager(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.setStyleSheet(
-      "background-color: #800000; QInputDialog{color: white}"
-      )
+      self.setStyleSheet("background-color: #800000")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
@@ -312,16 +310,18 @@ class manager(QWidget):
       self.tableWidget.removeRow(r)     # Remove the selected Row
 
    def add(self):
-      des, done1 = QInputDialog.getText(
+      userInput = QInputDialog()
+      userInput.setStyleSheet("background-color: white")
+
+      des, done1 = userInput.getText(
          self, 'Add Password', 'Enter Description:')
 
-      username, done2 = QInputDialog.getText(
+      username, done2 = userInput.getText(
          self, 'Add Password', 'Enter Username:')
 
-      password, done3 = QInputDialog.getText(
+      password, done3 = userInput.getText(
          self, 'Add Password', 'Enter Passoword:')
       
-
       if done1 and done2 and done3:
          if (des != "" or username != "" or password != ""):
             # insert a new empty row at the bottom of the table
