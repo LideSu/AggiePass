@@ -3,9 +3,9 @@
 
 import pandas as pd
 
+import encrypt_tools as enc
 from database import mydb as database
 from constant import database_name, authentication_tab, authentication_primary_key
-
 
 
 def new_uid_pin_to_db(
@@ -29,14 +29,18 @@ def delete_uid(db: database, uid: str) -> bool:
             authentication_primary_key[0], uid))
 
 
-def list_uid(db: database) -> pd.DataFrame:
-   pass
+def login(db: database, uid: str, pin: str) -> bool:
+    if (db.uid_exist(uid)):
+        salt = db.uid_pin_salt(uid)
+        authenticate_hash = enc.pin_hash(pin, salt)
+        return db.uid_pin_hash(uid) == authenticate_hash
+    return False
+
 
 if __name__ == '__main__':
 
     db = database(database_name)
     db.connect()
 
-    print(delete_uid(db=db, uid='ASDASDAS'))
-
+    print(login(db, '0776D0B4', 'RANDOM123'))
     # Establish database connection

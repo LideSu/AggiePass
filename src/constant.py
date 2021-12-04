@@ -11,6 +11,6 @@ password_vault_col_typ = ['TEXT', 'TEXT', 'TEXT', 'TEXT']
 password_vault_primary_key = ['uid']
 
 authentication_tab = 'authentication'
-authentication_col = ['uid', 'salt', 'pin']
+authentication_col = ['uid', 'salt', 'pin_hash']
 authentication_col_typ = ['TEXT', 'TEXT', 'TEXT']
 authentication_primary_key = ['uid']

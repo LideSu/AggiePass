@@ -15,6 +15,7 @@ Registration process:
 from database import mydb as database
 from constant import database_name, authentication_tab, password_vault_tab
 import encrypt_tools as enc
+from ard_comm import arduino_wr
 
 import psycopg2
 
@@ -22,7 +23,7 @@ import psycopg2
 
 
 def new_uid_to_db(
-        db: database, uid: str, salt: str, pin: str) -> bool:
+        db: database, uid: str, salt: str, hash: str) -> bool:
     """
     This functon returns True if we successfully add the
     new user into the database. Else returns False.
@@ -30,7 +31,7 @@ def new_uid_to_db(
     if (not db.uid_exist(uid)):
         db.insert(
             authentication_tab,
-            {'uid': uid, 'salt': salt, 'pin': pin})
+            {'uid': uid, 'salt': salt, 'pin_hash': hash})
         return True
     return False
 
@@ -38,21 +39,28 @@ def new_uid_to_db(
 if __name__ == '__main__':
 
     # Creating a new account
-
     # Connect to database
     db = database(database_name)
     db.connect()
 
-    # Read tag to get UID, check if it is new (Jack doing it)
-    new_uid = 'ASSSASSA'
-    if (not db.uid_exist(new_uid)):
-        print('New UID detected, you want to register?')
+    # Read tag to get UID, check if it is new
+    rfid_card_data = arduino_wr(mode='r')
+    uid = rfid_card_data[0]
+    uid_status = db.uid_exist(uid)
+    if (not uid_status):
+        print('New UID detected...')
     else:
-        print('UID recognized! Logging you in...')
+        print('UID recognized! Please use log in screen instead!')
+        exit()
 
     # Generate a random string key
     rand_str = enc.random_str_gen()
-    # Write it to rfid tag (Jack doing it)
+
+    # Write it to rfid tag
+    rfid_card_data = arduino_wr(mode='r', random_str=rand_str)
+    written_rand_str = rfid_card_data[1]
+    if rand_str == enc.hex_to_string(written_rand_str):
+        print('Successfully written to the card!')
 
     # Get a pin entry from user (Lide working on it)
     new_pin = 'RANDOM123'  # <-- placeholder
@@ -61,37 +69,9 @@ if __name__ == '__main__':
     rand_salt = enc.generate_pin_salt()
 
     # Forge the secret key and pass it to the password manager screen
-    secret_key = enc.forge_secret_key(tag_random_str=rand_str, pin=new_pin)
-    print(secret_key)
+    secret_key = enc.forge_secret_key(
+        tag_random_str=written_rand_str, pin=new_pin)
 
-    # Test
-    acc_des = 'This is a test account.2'
-    acc_username = '2'
-    acc_password = '2'
-    secret_msg = 'Hello :)'
-    enc_acc_dess = enc.encrypt_data(
-        'b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6',
-        data=acc_des)
-    enc_username = enc.encrypt_data(
-        'b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6',
-        data=acc_username)
-    enc_acc_password = enc.encrypt_data(
-        'b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6',
-        data=acc_password)
-    
-    # Test putting encrypted data to the database
-    try:
-        db.insert(
-            password_vault_tab,
-            {'uid': '123123', 'acc_description': enc_acc_dess,
-            'acc_username': enc_username, 'acc_password': enc_acc_password})
-    except psycopg2.Error as e:
-        print(e, end='')
-
-
-    # VERY DANGEROUS, DELETE EVERYTHING WITH THE SAME UID
-    # db.delete_row(password_vault_tab, condition='uid=\'{}\''.format('123123'))
-
-    # print('{}\n{}\n{}'.format(secret_msg, encrypted_msg, decrypted_msg))
-    # salt = enc.generate_pin_salt()
-    # print(new_uid_to_db(db=db, uid='ASDASDAS', salt=salt, pin='LKAJSDLKSAMDASDA'))
+    if (not uid_status):
+        hash = enc.pin_hash(new_pin, rand_salt)
+        new_uid_to_db(db=db, uid=uid, salt=rand_salt, hash=hash)

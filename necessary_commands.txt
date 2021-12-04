@@ -1,0 +1,6 @@
+Database commands:
+    Access database:
+        sudo su postgres
+        \c password_manager
+    Delete commands:
+        DROP TABLE films, distributors;

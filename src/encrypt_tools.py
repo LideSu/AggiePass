@@ -52,6 +52,12 @@ def forge_secret_key(tag_random_str: str, pin: str) -> str:
     return m.hexdigest()
 
 
+def pin_hash(pin: str, salt: str):
+    merged_pin_salt = pin + salt
+    m = hashlib.sha3_256(merged_pin_salt.encode('utf-8'))
+    return m.hexdigest()
+
+
 def generate_pin_salt():
     return bcrypt.gensalt()
 
@@ -68,6 +74,8 @@ def decrypt_data(secret_key: str, data: str):
     return aes.decrypt(data)
 
 # DF encryption and decryption
+
+
 def decrypt_vault(secret_key: str, df: DataFrame) -> DataFrame:
     df.acc_description = df.apply(lambda x: decrypt_data(
         secret_key, x.acc_description), axis=1)
@@ -86,6 +94,10 @@ def encrypt_vault(secret_key: str, df: DataFrame) -> DataFrame:
     df.acc_password = df.apply(lambda x: encrypt_data(
         secret_key, x.acc_password), axis=1)
     return df
+
+
+def hex_to_string(hex: str):
+    return bytes.fromhex(hex).decode('ASCII')
 
 
 if __name__ == '__main__':
