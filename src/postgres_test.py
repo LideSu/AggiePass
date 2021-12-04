@@ -11,14 +11,14 @@ password_manager_db.connect()
 
 df = password_manager_db.user_vault('123123')
 print(df)
-# df = decrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
-# print(df)
-df = encrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
+df = decrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
 print(df)
+# df = encrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
+# print(df)
 # df = decrypt_vault('b2001bccdcb7ea5556526cb70e58206996c3039282dd62e2ddc4a1d55be6c1d6', df)
 # print(df)
 # print(df)
-password_manager_db.update_user_vault('123123', df)
+# password_manager_db.update_user_vault('123123', df)
 # try:
 #     # password_manager_db.insert(
 #     #     password_vault_tab,
@@ -27,7 +27,7 @@ password_manager_db.update_user_vault('123123', df)
 #     password_manager_db.insert(
 #         authentication_tab,
 #         {'uid': '123123', 'salt': 'adsdadas',
-#          'pin': 'adasddasd'})
+#          'hash': 'adasddasd'})
 # except psycopg2.Error as e:
 #     print(e, end='')
 
@@ -38,4 +38,4 @@ password_manager_db.update_user_vault('123123', df)
 #     #     ['uid', 'acc_description', 'acc_username', 'acc_password'])
 #     password_manager_db.select(
 #         authentication_tab,
-#         ['uid', 'salt', 'pin']))
+#         ['uid', 'salt', 'hash']))

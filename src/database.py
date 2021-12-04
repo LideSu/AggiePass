@@ -13,7 +13,6 @@ import pandas as pd
 import pandas.io.sql as psqlio
 
 
-
 from constant import (
     database_account, authentication_tab, authentication_primary_key,
     password_vault_tab, password_vault_primary_key)
@@ -37,7 +36,6 @@ class mydb:
 
     def getconn(self):
         return self.conn
-        
 
     def new_table(self, tb_name, columns, col_type, primary_key,
                   constraints=[]):
@@ -191,6 +189,18 @@ class mydb:
             authentication_primary_key[0], uid))
         return cur.fetchone() is not None
 
+    def uid_pin_salt(self, uid):
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM {} WHERE {} = '{}'".format(authentication_tab,
+                    authentication_primary_key[0], uid))
+        return cur.fetchone()[1]
+
+    def uid_pin_hash(self, uid):
+        cur = self.conn.cursor()
+        cur.execute("SELECT * FROM {} WHERE {} = '{}'".format(authentication_tab,
+                    authentication_primary_key[0], uid))
+        return cur.fetchone()[2]
+
     def user_vault(self, uid) -> pd.DataFrame:
         """
         Read user's password vault and export it to a dataframe.
@@ -209,9 +219,10 @@ class mydb:
         This function should only export ENCRYPTED dataframe.
         """
         engine = create_engine('postgresql+psycopg2://', creator=self.getconn)
-        data = data.set_index('uid') # Strip default index
+        data = data.set_index('uid')  # Strip default index
 
         # Only update if index of given dataframe match the specified uid.
         if (data.index[0] == uid):
-            self.delete_row(password_vault_tab, condition='uid=\'{}\''.format(uid))
+            self.delete_row(password_vault_tab,
+                            condition='uid=\'{}\''.format(uid))
             data.to_sql(password_vault_tab, engine, if_exists='append')

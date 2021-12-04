@@ -59,10 +59,6 @@ void setup() {
         key.keyByte[i] = 0xFF;
     }
 
-    //Serial.println(F("Scan a MIFARE Classic PICC to demonstrate read and write."));
-    //Serial.print(F("Using key (for A and B):"));
-    //dump_byte_array(key.keyByte, MFRC522::MF_KEY_SIZE);
-    //Serial.println();
 
     //Serial.println(F("BEWARE: Data will be written to the PICC, in sector #1"));
 }
@@ -80,7 +76,7 @@ void loop() {
         return;
 
     // Show some details of the PICC (that is: the tag/card)
-    //Serial.print(F("Card UID:"));
+    Serial.print(F("Card UID:"));
     dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
     Serial.println();
     //Serial.print(F("PICC type: "));
@@ -101,7 +97,7 @@ void loop() {
     byte blockAddr      = 4;
     byte blockAddr2      = 5;
     Serial.println("Arduino is ready");
-    delay(10);
+    delay(5);
     recvWithEndMarker();
     showNewData();
     byte dataBlock[numChars];
@@ -131,22 +127,6 @@ void loop() {
         return;
     }
 
-    // Show the whole sector as it currently is
-    //Serial.println(F("Current data in sector:"));
-    //mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
-    //Serial.println();
-
-    // Read data from the block
-    //Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
-    //Serial.println(F(" ..."));
-    //status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-    //if (status != MFRC522::STATUS_OK) {
-    //    Serial.print(F("MIFARE_Read() failed: "));
-    //    Serial.println(mfrc522.GetStatusCodeName(status));
-    //}
-    //Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
-    //dump_byte_array(buffer, 16); Serial.println();
-    //Serial.println();
 
     // Authenticate using key B
     //Serial.println(F("Authenticating again using key B..."));
@@ -157,11 +137,6 @@ void loop() {
         //Serial.println(mfrc522.GetStatusCodeName(status));
         return;
     }
-
-    // Write data to the block
-    //Serial.print(F("Writing data into block ")); Serial.print(blockAddr);
-    //Serial.println(F(" ..."));
-    //dump_byte_array(dataBlock, 16); Serial.println();
     
     status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
     if (status != MFRC522::STATUS_OK) {
@@ -170,27 +145,15 @@ void loop() {
     }
     //Serial.println();
 
-    // Write data to the block
-    //Serial.print(F("Writing data into block ")); Serial.print(blockAddr2);
-    //Serial.println(F(" ..."));
-    //dump_byte_array(endBlock, 16); Serial.println();
     status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr2, endBlock, 16);
     if (status != MFRC522::STATUS_OK) {
         //Serial.print(F("MIFARE_Write() failed: "));
         //Serial.println(mfrc522.GetStatusCodeName(status));
     }
+    Serial.print(F("Card Data: "));
+    dump_byte_array(dataBlock, 16);
+    dump_byte_array(endBlock,16);
     }
-    //Serial.println();
-    // Read data from the block (again, should now be what we have written)
-    //Serial.print(F("Reading data from block ")); Serial.print(blockAddr);
-    //Serial.println(F(" ..."));
-    //status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
-    //if (status != MFRC522::STATUS_OK) {
-    //    Serial.print(F("MIFARE_Read() failed: "));
-    //    Serial.println(mfrc522.GetStatusCodeName(status));
-    //}
-    //Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
-    //dump_byte_array(buffer, 16); Serial.println();
 
     // Check that data in block is what we have written
     // by counting the number of bytes that are equal
@@ -214,6 +177,9 @@ void loop() {
     //Serial.println(F("Current data in sector:"));
     else{
     mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
+    Serial.print(F("Card Data: "));
+    dump_byte_array(dataBlock, 16);
+    dump_byte_array(endBlock, 16);
     }
     //Serial.println();
 
@@ -261,7 +227,7 @@ void showNewData()
 {
   if(newData = true){
     //Serial.println("This just in...");
-    Serial.println(receivedChars);
+    //Serial.println(receivedChars);
     newData = false;
   }
 }
