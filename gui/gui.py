@@ -20,7 +20,7 @@ class welcome(QWidget):
       self.title3 = QLabel("Please Enter Your PIN")
       # add the text edit bar, this will serve as the input box of PIN.
       self.edit = QLineEdit()
-      self.button_submit = QPushButton("SUBMIT")      # add the submit button
+      self.button_submit = QPushButton("LOG IN")      # add the submit button
       self.button_register = QPushButton("REGISTER")  # add the submit button
 
       # modify the stylesheets of the titles.
@@ -161,6 +161,7 @@ class registration(QWidget):
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
+
       # no home window yet.
       self.hm = None
 
@@ -174,7 +175,7 @@ class registration(QWidget):
       if self.hm == None:
          self.hm = welcome()
          self.hm.show()
-         self.close
+         self.close()
          self = None
       else:
          self.hm.close()
@@ -197,7 +198,7 @@ class manager(QWidget):
       self.button_export = QPushButton("SELECT")
       self.button_add = QPushButton("ADD")        # add the add button
       self.button_delete = QPushButton("DELETE")  # add the delete button
-      self.button_home = QPushButton("HOME")      # add the home button
+      self.button_home = QPushButton("LOG OUT")      # add the home button
 
       # modify the stylesheet of buttonS.
       self.button_home.clicked.connect(self.home)
@@ -252,7 +253,7 @@ class manager(QWidget):
       if self.hm == None:
          self.hm = welcome()
          self.hm.show()
-         self.close
+         self.close()
          self = None
       else:
          self.hm.close()
@@ -296,17 +297,20 @@ class manager(QWidget):
       return self.tableWidget
    
    # Obtain the password on the selected row
-   def export(self, selected):
-      # this marks the index of the selected row, might be useful later.
-      # ix = selected.indexes()[0]
-      r = self.tableWidget.currentRow() # Get the index of the selected row.
-      password = self.tableWidget.item(r,2).text() # get the passowrd value based on the row number obtained above.
-      print(password)
+   def export(self):
+      try:
+         r = self.tableWidget.selectionModel().selectedRows()
+         password = self.tableWidget.item(r[0].row(),2).text() # get the passowrd value based on the row number obtained above.
+         print(password)
+      except IndexError:
+         pass
 
-   def delete(self, selected):
-      # ix = selected.indexes()[0]
-      r = self.tableWidget.currentRow() # Get the index of the selected row.
-      self.tableWidget.removeRow(r)     # Remove the selected Row
+   def delete(self):
+      try:
+         r = self.tableWidget.selectionModel().selectedRows()
+         self.tableWidget.removeRow(r[0].row())     # Remove the selected Row
+      except IndexError:
+         pass
 
    def add(self):
       userInput = QInputDialog(self)
