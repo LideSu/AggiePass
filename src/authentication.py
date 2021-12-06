@@ -42,5 +42,5 @@ if __name__ == '__main__':
     db = database(database_name)
     db.connect()
 
-    print(login(db, '0776D0B4', 'RANDOM123'))
+    print(login(db, '8436B32E', 'hello'))
     # Establish database connection

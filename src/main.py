@@ -1,13 +1,16 @@
 import sys
+import pandas as pd
+import encrypt_tools as enc
+from ard_comm import arduino_wr
+from registration import new_uid_to_db
 from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-import pandas as pd
 from database import mydb as database
-from constant import database_name, authentication_tab, password_vault_tab
-import encrypt_tools as enc
-from ard_comm import arduino_wr
+from constant import database_name, authentication_tab, password_vault_tab, authentication_primary_key
+from authentication import login
+ 
 
 # Define the welcome page.
 
@@ -16,6 +19,8 @@ class welcome(QWidget):
 
    def __init__(self, parent=None):
       super(welcome, self).__init__(parent)
+      self.db = database(database_name)
+      self.db.connect()
 
       # create the widgets.
       # the title of the window.
@@ -73,6 +78,7 @@ class welcome(QWidget):
       self.setStyleSheet("background-color: #800000")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
+      self.scan()  
 
       # no registration window yet.
       self.reg = None
@@ -82,15 +88,24 @@ class welcome(QWidget):
 
    # This method is invoked by button click, it will be changed in the future.
    def submission(self):
-      print(f"Hello, {self.edit.text()}")
-      if self.manage == None:
-         self.manage = manager()
-         self.manage.show()
-         self.close()
-         self = None
+      # print(f"Hello, {self.edit.text()}")
+      auth = login(self.db, self.uid, self.edit.text())
+      if auth:
+         # Forge the secret key and pass it to the password manager screen
+         self.rand_str = self.rfid_card_data[1]
+         self.secret_key = enc.forge_secret_key(tag_random_str=self.rand_str, pin = self.edit.text())
+
+         if self.manage == None:
+            self.manage = manager(QWidget)
+            self.manage.show()
+            self.close()
+            self = None
+         else:
+            self.manage.close()
+            self.manage = None
       else:
-         self.manage.close()
-         self.manage = None
+         self.title2.setText('Incorrect PIN, please try again')
+
 
    # This method is invoked by button click, it will be changed in the future.
    def registration(self):
@@ -102,6 +117,21 @@ class welcome(QWidget):
       else:
          self.reg.close()
          self.reg = None
+   
+   # This method asks the user to scan the RFID tag and extracts the value out of it.
+   def scan(self):
+      # Read tag to get UID, check if it is new
+      self.rfid_card_data = arduino_wr(mode='r')
+      self.uid = self.rfid_card_data[0]
+      print(self.uid)
+      self.uid_status = self.db.uid_exist(self.uid)
+      print(self.uid_status)
+      if (not self.uid_status):
+         # print('New UID detected...')
+         self.title2.setText('Could not find the user information, please REGISTER')
+      else:
+         self.title2.setText('RFID found, please enter PIN')
+         
 
 
 # Define the registration page.
@@ -111,8 +141,8 @@ class registration(QWidget):
 
       # Creating a new account
       # Connect to database
-      db = database(database_name)
-      db.connect()
+      self.db = database(database_name)
+      self.db.connect()
 
       # create the widgets.
       # the title of the window.
@@ -172,26 +202,55 @@ class registration(QWidget):
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
-      # Read tag to get UID, check if it is new
-      rfid_card_data = arduino_wr(mode='r')
-      uid = rfid_card_data[0]
-      uid_status = db.uid_exist(uid)
-      if (not uid_status):
-         print('New UID detected...')
-         self.title2.setText('New UID detected...')
-      else:
-         print('UID recognized! Please use log in screen instead!')
-         exit()
-
-
+      self.scan()
+     
       # no home window yet.
       self.hm = None
 
+   # This method urges the user to scan the RFID tag
+   def scan(self):
+      # Read tag to get UID, check if it is new
+      self.rfid_card_data = arduino_wr(mode='r')
+      self.uid = self.rfid_card_data[0]
+      print(self.uid)
+      self.uid_status = self.db.uid_exist(self.uid)
+      print(self.uid_status)
+      if (not self.uid_status):
+         # print('New UID detected...')
+         self.title2.setText('New UID detected...')
+         # Generate a random string key
+         self.rand_str = enc.random_str_gen()
+         # Write it to rfid tag
+         self.rfid_card_data = arduino_wr(mode='w', random_str=self.rand_str)
+         self.written_rand_str = self.rfid_card_data[1]
+         if self.rand_str == enc.hex_to_string(self.written_rand_str):
+            print('Successfully written to the card!')
+            self.title2.setText('Successfully written to the card!')
+            # Generate a random string key
+            self.rand_str = enc.random_str_gen()
+      else:
+         print('UID recognized! Please use log in screen instead!')
+         self.title2.setText('UID recognized! Please use log in screen instead!')
+         # exit()
+
+
+
    # This method is invoked by button click, it will be changed in the future.
    def submission(self):
-      print(f"Hello, {self.edit.text()}")
-      self.home()
+      # print(f"Hello, {self.edit.text()}")
+      # Get a pin entry from user (Lide working on it)
+      new_pin = self.edit.text()  # <-- placeholder
 
+      # Generate a salt -> store it in DB
+      rand_salt = enc.generate_pin_salt()
+
+      if (not self.uid_status):
+         hash = enc.pin_hash(new_pin, rand_salt)
+         new_uid_to_db(db=self.db, uid=self.uid, salt=rand_salt, hash=hash)
+
+      self.title2.setText("Registraion Successful, you may return to Home")
+      self.edit.setText("")
+      
    # This method is invoked by button click, it will be changed in the future.
    def home(self):
       if self.hm == None:
@@ -214,9 +273,10 @@ pass_data = df.to_numpy()
 
 # Define the manager page.
 class manager(QWidget):
-   def __init__(self, parent=None):
+   def __init__(self, parent=welcome):
       super(manager, self).__init__(parent)
-
+      self.secret_key = parent.secret_key
+      
       self.button_export = QPushButton("SELECT")
       self.button_add = QPushButton("ADD")        # add the add button
       self.button_delete = QPushButton("DELETE")  # add the delete button

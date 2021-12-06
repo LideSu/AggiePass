@@ -47,6 +47,7 @@ if __name__ == '__main__':
     rfid_card_data = arduino_wr(mode='r')
     uid = rfid_card_data[0]
     uid_status = db.uid_exist(uid)
+    print(uid)
     if (not uid_status):
         print('New UID detected...')
     else:
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     rand_str = enc.random_str_gen()
 
     # Write it to rfid tag
-    rfid_card_data = arduino_wr(mode='r', random_str=rand_str)
+    rfid_card_data = arduino_wr(mode='w', random_str=rand_str)
     written_rand_str = rfid_card_data[1]
     if rand_str == enc.hex_to_string(written_rand_str):
         print('Successfully written to the card!')

@@ -4,8 +4,14 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import pandas as pd
- 
+# from database import mydb as database
+# from constant import database_name, authentication_tab, password_vault_tab
+# import encrypt_tools as enc
+# from ard_comm import arduino_wr
+
 # Define the welcome page.
+
+
 class welcome(QWidget):
 
    def __init__(self, parent=None):
@@ -103,6 +109,11 @@ class registration(QWidget):
    def __init__(self, parent=None):
       super(registration, self).__init__(parent)
 
+      # Creating a new account
+      # Connect to database
+      # db = database(database_name)
+      # db.connect()
+
       # create the widgets.
       # the title of the window.
       self.title = QLabel("Registration")
@@ -160,6 +171,17 @@ class registration(QWidget):
       self.setStyleSheet("background-color: #800000")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
+
+      # Read tag to get UID, check if it is new
+      # rfid_card_data = arduino_wr(mode='r')
+      # uid = rfid_card_data[0]
+      # uid_status = db.uid_exist(uid)
+      # if (not uid_status):
+      #    print('New UID detected...')
+      #    self.title2.setText('New UID detected...')
+      # else:
+      #    print('UID recognized! Please use log in screen instead!')
+      #    exit()
 
 
       # no home window yet.
@@ -278,7 +300,9 @@ class manager(QWidget):
       # set the column headers.
       idx = 0
       for i in df.columns.values:
-         self.tableWidget.setHorizontalHeaderItem(idx, QTableWidgetItem(i))
+         new_header =  QTableWidgetItem(i)
+         new_header.setForeground(QColor(255, 255, 255))
+         self.tableWidget.setHorizontalHeaderItem(idx, new_header)
          idx += 1
 
       # set the cell values.
@@ -315,6 +339,7 @@ class manager(QWidget):
    def add(self):
       userInput = QInputDialog(self)
       userInput.setStyleSheet("background-color: white")
+      # userInput.setBackground(QColor(255, 255, 255))
 
       des, done1 = userInput.getText(
          self, 'Add Password', 'Enter Description:')

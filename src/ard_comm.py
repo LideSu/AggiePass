@@ -9,7 +9,7 @@ def __arduino_wr(ser: serial.Serial, mode='r', random_str='') -> str:
     payload = mode_ind + random_str + '\n'
     card_uid = ''
     card_data = ''
-
+    # print(payload)
     while True:
         s = ser.readline()
         s = s.strip()
@@ -26,9 +26,10 @@ def __arduino_wr(ser: serial.Serial, mode='r', random_str='') -> str:
             ans = payload
             ans = ans.encode("utf-8")
             ser.write(ans)
+        # return (card_uid, card_data)
 
 
-def arduino_wr(mode='r', random_str='', ser_path='/dev/ttyUSB2') -> str:
+def arduino_wr(mode='r', random_str='', ser_path='/dev/ttyUSB0') -> str:
     ser = serial.Serial(ser_path, 9600, timeout=1)
     print('Reading card, do not lift...' if mode ==
           'r' else 'Writing {} to card...'.format(random_str))

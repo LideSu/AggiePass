@@ -153,6 +153,7 @@ void loop() {
     Serial.print(F("Card Data: "));
     dump_byte_array(dataBlock, 16);
     dump_byte_array(endBlock,16);
+    
     }
     else if (firstChar[0] == '='){
     mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
