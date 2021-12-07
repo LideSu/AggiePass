@@ -43,4 +43,3 @@ if __name__ == '__main__':
     db.connect()
 
     print(login(db, '8436B32E', 'hello'))
-    # Establish database connection
