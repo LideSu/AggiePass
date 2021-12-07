@@ -77,22 +77,24 @@ def decrypt_data(secret_key: str, data: str):
 
 
 def decrypt_vault(secret_key: str, df: DataFrame) -> DataFrame:
-    df.acc_description = df.apply(lambda x: decrypt_data(
-        secret_key, x.acc_description), axis=1)
-    df.acc_username = df.apply(lambda x: decrypt_data(
-        secret_key, x.acc_username), axis=1)
-    df.acc_password = df.apply(lambda x: decrypt_data(
-        secret_key, x.acc_password), axis=1)
+    if not df.empty:
+        df.acc_description = df.apply(lambda x: decrypt_data(
+            secret_key, x.acc_description), axis=1)
+        df.acc_username = df.apply(lambda x: decrypt_data(
+            secret_key, x.acc_username), axis=1)
+        df.acc_password = df.apply(lambda x: decrypt_data(
+            secret_key, x.acc_password), axis=1)
     return df
 
 
 def encrypt_vault(secret_key: str, df: DataFrame) -> DataFrame:
-    df.acc_description = df.apply(lambda x: encrypt_data(
-        secret_key, x.acc_description), axis=1)
-    df.acc_username = df.apply(lambda x: encrypt_data(
-        secret_key, x.acc_username), axis=1)
-    df.acc_password = df.apply(lambda x: encrypt_data(
-        secret_key, x.acc_password), axis=1)
+    if not df.empty:
+        df.acc_description = df.apply(lambda x: encrypt_data(
+            secret_key, x.acc_description), axis=1)
+        df.acc_username = df.apply(lambda x: encrypt_data(
+            secret_key, x.acc_username), axis=1)
+        df.acc_password = df.apply(lambda x: encrypt_data(
+            secret_key, x.acc_password), axis=1)
     return df
 
 

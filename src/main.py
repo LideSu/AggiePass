@@ -8,15 +8,17 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from database import mydb as database
-from constant import database_name, authentication_tab, password_vault_tab, authentication_primary_key
+from constant import database_name
 from authentication import login
  
+# global secret key
+secret_key = ''
+timers = []
+current_uid = ''
 
 # Define the welcome page.
-
-
 class welcome(QWidget):
-
+   EXIT_CODE_REBOOT = -123
    def __init__(self, parent=None):
       super(welcome, self).__init__(parent)
       self.db = database(database_name)
@@ -33,6 +35,7 @@ class welcome(QWidget):
       self.edit = QLineEdit()
       self.button_submit = QPushButton("LOG IN")      # add the submit button
       self.button_register = QPushButton("REGISTER")  # add the submit button
+      self.button_reset = QPushButton("RESET")  # add the submit button
 
       # modify the stylesheets of the titles.
       self.title.setStyleSheet("color: white; font: bold 25px")
@@ -61,10 +64,25 @@ class welcome(QWidget):
          "background-color: white; color: #800000; font: bold 12px")
       self.button_register.setFixedWidth(80)
       self.button_register.setFixedHeight(30)
+      
+      # modify the stylesheet of reset button.
+      self.button_reset.clicked.connect(self.reset)
+      self.button_reset.setStyleSheet(
+         "background-color: white; color: #800000; font: bold 12px")
+      self.button_reset.setFixedWidth(80)
+      self.button_reset.setFixedHeight(30)
 
-      # create a layout fot he window, and then add the widgets to the layout.
+      # The horizontal layout for the buttons.
+      layout_buttons = QHBoxLayout()
+      layout_buttons.addWidget(self.button_reset, alignment=Qt.AlignRight)
+      horizontalSpacer = QSpacerItem(290, 0, QSizePolicy.Minimum, QSizePolicy.Minimum)
+      layout_buttons.addItem(horizontalSpacer)
+      layout_buttons.addWidget(self.button_register, alignment=Qt.AlignLeft)
+
+
+      # create a layout for the window, and then add the widgets to the layout.
       layout = QVBoxLayout(self)
-      layout.addWidget(self.button_register, alignment=Qt.AlignRight)
+      layout.addLayout(layout_buttons)
       layout.addWidget(self.title, alignment=Qt.AlignCenter)
       layout.addWidget(self.title2, alignment=Qt.AlignCenter)
       layout.addWidget(self.title3, alignment=Qt.AlignCenter)
@@ -78,13 +96,21 @@ class welcome(QWidget):
       self.setStyleSheet("background-color: #800000")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
-      self.scan()  
 
+      global timers
+      timer = QTimer()
+      timer.start(1000)
+      timer.timeout.connect(self.scan)
+      timers.append(timer)
+      
       # no registration window yet.
       self.reg = None
 
       # no management window yet.
       self.manage = None
+   
+   def reset(self):
+      qApp.exit(welcome.EXIT_CODE_REBOOT)
 
    # This method is invoked by button click, it will be changed in the future.
    def submission(self):
@@ -93,10 +119,12 @@ class welcome(QWidget):
       if auth:
          # Forge the secret key and pass it to the password manager screen
          self.rand_str = self.rfid_card_data[1]
-         self.secret_key = enc.forge_secret_key(tag_random_str=self.rand_str, pin = self.edit.text())
-
+         global secret_key, current_uid
+         secret_key = enc.forge_secret_key(tag_random_str=self.rand_str, pin = self.edit.text())
+         current_uid = self.uid
+         
          if self.manage == None:
-            self.manage = manager(QWidget)
+            self.manage = manager()
             self.manage.show()
             self.close()
             self = None
@@ -105,8 +133,8 @@ class welcome(QWidget):
             self.manage = None
       else:
          self.title2.setText('Incorrect PIN, please try again')
-
-
+         self.edit.clear()
+      
    # This method is invoked by button click, it will be changed in the future.
    def registration(self):
       if self.reg == None:
@@ -131,9 +159,10 @@ class welcome(QWidget):
          self.title2.setText('Could not find the user information, please REGISTER')
       else:
          self.title2.setText('RFID found, please enter PIN')
+      global timers
+      timers.clear()
+
          
-
-
 # Define the registration page.
 class registration(QWidget):
    def __init__(self, parent=None):
@@ -148,7 +177,7 @@ class registration(QWidget):
       # the title of the window.
       self.title = QLabel("Registration")
       # the second line of title
-      self.title2 = QLabel("Please Scan Your RFID")
+      self.title2 = QLabel("Please Scan Your RFID. Do not lift!")
       # the third line of title
       self.title3 = QLabel("Please Enter Your PIN")
       # add the text edit bar, this will serve as the input box of PIN.
@@ -202,7 +231,11 @@ class registration(QWidget):
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
-      self.scan()
+      global timers
+      timer = QTimer()
+      timer.start(1000)
+      timer.timeout.connect(self.scan)
+      timers.append(timer)
      
       # no home window yet.
       self.hm = None
@@ -212,12 +245,12 @@ class registration(QWidget):
       # Read tag to get UID, check if it is new
       self.rfid_card_data = arduino_wr(mode='r')
       self.uid = self.rfid_card_data[0]
-      print(self.uid)
+      # print(self.uid)
       self.uid_status = self.db.uid_exist(self.uid)
-      print(self.uid_status)
+      # print(self.uid_status)
       if (not self.uid_status):
          # print('New UID detected...')
-         self.title2.setText('New UID detected...')
+         self.title2.setText('New UID detected...')  
          # Generate a random string key
          self.rand_str = enc.random_str_gen()
          # Write it to rfid tag
@@ -232,8 +265,9 @@ class registration(QWidget):
          print('UID recognized! Please use log in screen instead!')
          self.title2.setText('UID recognized! Please use log in screen instead!')
          # exit()
-
-
+      
+      global timers
+      timers.clear()
 
    # This method is invoked by button click, it will be changed in the future.
    def submission(self):
@@ -262,21 +296,36 @@ class registration(QWidget):
          self.hm.close()
          self.hm = None
 
-
-data = {
-        'acc_description':['dafergdsgagdadsa1234', 'dsa4dsa32dgsat4', '2fdsat4eadfa454', '2efdsa4ty5yhts', 'dsa234gdfsa4ytqa'],
-        'acc_username':['sa2rfdsa32gsa', 'a32t2dsa4tf', '2rgdfsaaw34gra', 'as32fdsa4ygfdsa', 'q2fdsa32ytgfdas'],
-        'acc_password':['2esda32tdsa3tgrsae312sa3', 'as4esagesa32afdsafdsa', '1ea43wadasf43ag4a4', '2gsa33at4afdsa', '23ta4a4ygs4ay4afds'] 
-        }
-df = pd.DataFrame(data)
-pass_data = df.to_numpy()
-
 # Define the manager page.
 class manager(QWidget):
-   def __init__(self, parent=welcome):
+   def __init__(self, parent = None):
       super(manager, self).__init__(parent)
-      self.secret_key = parent.secret_key
-      
+      global secret_key, current_uid
+      print(secret_key)
+      print(current_uid)
+
+      # Creating a new account
+      # Connect to database
+      self.db = database(database_name)
+      self.db.connect()
+
+      print(self.db.vault_exist(current_uid))
+      if not self.db.vault_exist(current_uid):
+         data = {
+        'acc_description':[],
+        'acc_username':[],
+        'acc_password':[]
+        }
+         self.df = pd.DataFrame(data)
+         self.pass_data = self.df.to_numpy()
+      else:
+         encryted_df = self.db.user_vault(current_uid)
+         print(encryted_df)
+         self.df = enc.decrypt_vault(secret_key, encryted_df)
+         print(self.df)
+         self.df = self.df.drop(columns = ['uid'])
+         self.pass_data = self.df.to_numpy()
+
       self.button_export = QPushButton("SELECT")
       self.button_add = QPushButton("ADD")        # add the add button
       self.button_delete = QPushButton("DELETE")  # add the delete button
@@ -335,6 +384,14 @@ class manager(QWidget):
       if self.hm == None:
          self.hm = welcome()
          self.hm.show()
+         global secret_key, current_uid
+         
+         self.df.insert(0, 'uid', [current_uid for i in range(len(self.df.acc_password))], True)
+         encrypted_df = enc.encrypt_vault(secret_key, self.df)
+         self.db.update_user_vault(current_uid, encrypted_df)
+
+         secret_key = ''
+         current_uid = ''
          self.close()
          self = None
       else:
@@ -354,12 +411,12 @@ class manager(QWidget):
       self.tableWidget.setFixedHeight(240)
 
       # row and column count.
-      self.tableWidget.setRowCount(len(df.acc_username))
+      self.tableWidget.setRowCount(len(self.df.acc_username))
       self.tableWidget.setColumnCount(3)
 
       # set the column headers.
       idx = 0
-      for i in df.columns.values:
+      for i in self.df.columns.values:
          new_header =  QTableWidgetItem(i)
          new_header.setForeground(QColor(255, 255, 255))
          self.tableWidget.setHorizontalHeaderItem(idx, new_header)
@@ -368,7 +425,7 @@ class manager(QWidget):
       # set the cell values.
       for i in range(self.tableWidget.rowCount()):
          for j in range(self.tableWidget.columnCount()):
-            new_item = QTableWidgetItem(pass_data[i][j])
+            new_item = QTableWidgetItem(self.pass_data[i][j])
             new_item.setForeground(QColor(255, 255, 255))
             self.tableWidget.setItem(i,j, new_item)
       
@@ -392,7 +449,9 @@ class manager(QWidget):
    def delete(self):
       try:
          r = self.tableWidget.selectionModel().selectedRows()
+         print(r[0].row())
          self.tableWidget.removeRow(r[0].row())     # Remove the selected Row
+         self.df = self.df.drop([r[0].row()])
       except IndexError:
          pass
 
@@ -429,16 +488,25 @@ class manager(QWidget):
             self.tableWidget.setItem(rowPosition , 0, new_des)
             self.tableWidget.setItem(rowPosition , 1, new_username)
             self.tableWidget.setItem(rowPosition , 2, new_pass)
+
+            # update the dataframe
+            new_df = {'acc_description': des, 'acc_username': username, 'acc_password': password}
+            self.df = self.df.append(new_df, ignore_index = True)
+
   
 def main():
-   app = QApplication(sys.argv)
-   screen = app.primaryScreen()
-   print('Screen: %s' % screen.name())
-   rect = screen.availableGeometry()
-   print('Available: %d x %d' % (rect.width(), rect.height()))
-   ex = welcome()
-   ex.show()
-   sys.exit(app.exec_())
+   currentExitCode = welcome.EXIT_CODE_REBOOT
+   while currentExitCode == welcome.EXIT_CODE_REBOOT:
+      app = QApplication(sys.argv)
+      screen = app.primaryScreen()
+      print('Screen: %s' % screen.name())
+      rect = screen.availableGeometry()
+      print('Available: %d x %d' % (rect.width(), rect.height()))
+      ex = welcome()
+      ex.show()
+      currentExitCode = app.exec_()
+      # sys.exit(app.exec_())
+      app = None
 
 
 if __name__ == '__main__':

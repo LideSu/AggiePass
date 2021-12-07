@@ -189,6 +189,22 @@ class mydb:
             authentication_primary_key[0], uid))
         return cur.fetchone() is not None
 
+    def vault_exist(self, uid) -> bool:
+        cur = self.conn.cursor()
+        cur.execute("SELECT {} FROM {} WHERE {} = '{}'".format(
+            password_vault_primary_key[0], password_vault_tab,
+            password_vault_primary_key[0], uid))
+        return cur.fetchone() is not None
+
+    def vault_delete(self, uid) -> bool:
+        cur = self.conn.cursor()
+        cur.execute("DELETE FROM {} WHERE {} = '{}'".format(
+            password_vault_tab, password_vault_primary_key[0], uid))
+        cur.execute("SELECT {} FROM {} WHERE {} = '{}'".format(
+            password_vault_primary_key[0], password_vault_tab,
+            password_vault_primary_key[0], uid))
+        return cur.fetchone() is None
+
     def uid_pin_salt(self, uid):
         cur = self.conn.cursor()
         cur.execute("SELECT * FROM {} WHERE {} = '{}'".format(authentication_tab,
@@ -221,8 +237,11 @@ class mydb:
         engine = create_engine('postgresql+psycopg2://', creator=self.getconn)
         data = data.set_index('uid')  # Strip default index
 
-        # Only update if index of given dataframe match the specified uid.
-        if (data.index[0] == uid):
-            self.delete_row(password_vault_tab,
-                            condition='uid=\'{}\''.format(uid))
-            data.to_sql(password_vault_tab, engine, if_exists='append')
+        if not data.empty:
+            # Only update if index of given dataframe match the specified uid.
+            if (data.index[0] == uid):
+                self.delete_row(password_vault_tab,
+                                condition='uid=\'{}\''.format(uid))
+                data.to_sql(password_vault_tab, engine, if_exists='append')
+        if data.empty:
+            self.vault_delete(uid)
