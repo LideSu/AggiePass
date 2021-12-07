@@ -97,7 +97,7 @@ def keyboard_to_device(input_str):
         print(char)
 
 if __name__ == '__main__':
-    keyboard_to_device("password")
+    keyboard_to_device("pwd\n")
 
 
 

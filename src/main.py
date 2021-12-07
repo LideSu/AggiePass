@@ -7,18 +7,19 @@ from PyQt5 import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from threading import *
 from database import mydb as database
 from constant import database_name
 from authentication import login
  
 # global secret key
 secret_key = ''
-timers = []
+# timers = []
 current_uid = ''
 
 # Define the welcome page.
 class welcome(QWidget):
-   EXIT_CODE_REBOOT = -123
+   # EXIT_CODE_REBOOT = -123
    def __init__(self, parent=None):
       super(welcome, self).__init__(parent)
       self.db = database(database_name)
@@ -35,7 +36,7 @@ class welcome(QWidget):
       self.edit = QLineEdit()
       self.button_submit = QPushButton("LOG IN")      # add the submit button
       self.button_register = QPushButton("REGISTER")  # add the submit button
-      self.button_reset = QPushButton("RESET")  # add the submit button
+      # self.button_reset = QPushButton("RESET")  # add the submit button
 
       # modify the stylesheets of the titles.
       self.title.setStyleSheet("color: white; font: bold 25px")
@@ -66,23 +67,23 @@ class welcome(QWidget):
       self.button_register.setFixedHeight(30)
       
       # modify the stylesheet of reset button.
-      self.button_reset.clicked.connect(self.reset)
-      self.button_reset.setStyleSheet(
-         "background-color: white; color: #800000; font: bold 12px")
-      self.button_reset.setFixedWidth(80)
-      self.button_reset.setFixedHeight(30)
+      # self.button_reset.clicked.connect(self.reset)
+      # self.button_reset.setStyleSheet(
+      #    "background-color: white; color: #800000; font: bold 12px")
+      # self.button_reset.setFixedWidth(80)
+      # self.button_reset.setFixedHeight(30)
 
       # The horizontal layout for the buttons.
-      layout_buttons = QHBoxLayout()
-      layout_buttons.addWidget(self.button_reset, alignment=Qt.AlignRight)
-      horizontalSpacer = QSpacerItem(290, 0, QSizePolicy.Minimum, QSizePolicy.Minimum)
-      layout_buttons.addItem(horizontalSpacer)
-      layout_buttons.addWidget(self.button_register, alignment=Qt.AlignLeft)
-
+      # layout_buttons = QHBoxLayout()
+      # layout_buttons.addWidget(self.button_reset, alignment=Qt.AlignRight)
+      # horizontalSpacer = QSpacerItem(290, 0, QSizePolicy.Minimum, QSizePolicy.Minimum)
+      # layout_buttons.addItem(horizontalSpacer)
+      # layout_buttons.addWidget(self.button_register, alignment=Qt.AlignLeft)
 
       # create a layout for the window, and then add the widgets to the layout.
       layout = QVBoxLayout(self)
-      layout.addLayout(layout_buttons)
+      # layout.addLayout(layout_buttons)
+      layout.addWidget(self.button_register, alignment = Qt.AlignRight)
       layout.addWidget(self.title, alignment=Qt.AlignCenter)
       layout.addWidget(self.title2, alignment=Qt.AlignCenter)
       layout.addWidget(self.title3, alignment=Qt.AlignCenter)
@@ -97,11 +98,15 @@ class welcome(QWidget):
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
-      global timers
-      timer = QTimer()
-      timer.start(1000)
-      timer.timeout.connect(self.scan)
-      timers.append(timer)
+      # global timers
+      # timer = QTimer()
+      # timer.start(1000)
+      # timer.timeout.connect(self.scan)
+      # timers.append(timer)
+
+      t1=Thread(target=self.scan)
+      t1.daemon = True
+      t1.start()
       
       # no registration window yet.
       self.reg = None
@@ -109,31 +114,36 @@ class welcome(QWidget):
       # no management window yet.
       self.manage = None
    
-   def reset(self):
-      qApp.exit(welcome.EXIT_CODE_REBOOT)
+   # def reset(self):
+   #    qApp.exit(welcome.EXIT_CODE_REBOOT)
 
    # This method is invoked by button click, it will be changed in the future.
    def submission(self):
-      # print(f"Hello, {self.edit.text()}")
-      auth = login(self.db, self.uid, self.edit.text())
-      if auth:
-         # Forge the secret key and pass it to the password manager screen
-         self.rand_str = self.rfid_card_data[1]
-         global secret_key, current_uid
-         secret_key = enc.forge_secret_key(tag_random_str=self.rand_str, pin = self.edit.text())
-         current_uid = self.uid
-         
-         if self.manage == None:
-            self.manage = manager()
-            self.manage.show()
-            self.close()
-            self = None
+      try:
+         # print(f"Hello, {self.edit.text()}")
+         auth = login(self.db, self.uid, self.edit.text())
+         if auth:
+            # Forge the secret key and pass it to the password manager screen
+            self.rand_str = self.rfid_card_data[1]
+            global secret_key, current_uid
+            secret_key = enc.forge_secret_key(tag_random_str=self.rand_str, pin = self.edit.text())
+            current_uid = self.uid
+            
+            if self.manage == None:
+               self.manage = manager()
+               self.manage.show()
+               self.close()
+               self = None
+            else:
+               self.manage.close()
+               self.manage = None
          else:
-            self.manage.close()
-            self.manage = None
-      else:
-         self.title2.setText('Incorrect PIN, please try again')
-         self.edit.clear()
+            self.title2.setText('Incorrect PIN, please try again')
+            self.edit.clear()
+      except AttributeError:
+         self.title2.setText("No RFID tag detected, please scan your tag")
+      
+
       
    # This method is invoked by button click, it will be changed in the future.
    def registration(self):
@@ -159,8 +169,9 @@ class welcome(QWidget):
          self.title2.setText('Could not find the user information, please REGISTER')
       else:
          self.title2.setText('RFID found, please enter PIN')
-      global timers
-      timers.clear()
+      
+      # global timers
+      # timers.clear()
 
          
 # Define the registration page.
@@ -177,7 +188,7 @@ class registration(QWidget):
       # the title of the window.
       self.title = QLabel("Registration")
       # the second line of title
-      self.title2 = QLabel("Please Scan Your RFID. Do not lift!")
+      self.title2 = QLabel("Please Scan Your RFID")
       # the third line of title
       self.title3 = QLabel("Please Enter Your PIN")
       # add the text edit bar, this will serve as the input box of PIN.
@@ -231,11 +242,15 @@ class registration(QWidget):
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
-      global timers
-      timer = QTimer()
-      timer.start(1000)
-      timer.timeout.connect(self.scan)
-      timers.append(timer)
+      # global timers
+      # timer = QTimer()
+      # timer.start(1000)
+      # timer.timeout.connect(self.scan)
+      # timers.append(timer)
+
+      t2=Thread(target=self.scan)
+      t2.daemon = True
+      t2.start()
      
       # no home window yet.
       self.hm = None
@@ -266,8 +281,8 @@ class registration(QWidget):
          self.title2.setText('UID recognized! Please use log in screen instead!')
          # exit()
       
-      global timers
-      timers.clear()
+      # global timers
+      # timers.clear()
 
    # This method is invoked by button click, it will be changed in the future.
    def submission(self):
@@ -277,13 +292,17 @@ class registration(QWidget):
 
       # Generate a salt -> store it in DB
       rand_salt = enc.generate_pin_salt()
+      
+      try:
+         if (not self.uid_status):
+            hash = enc.pin_hash(new_pin, rand_salt)
+            new_uid_to_db(db=self.db, uid=self.uid, salt=rand_salt, hash=hash)
 
-      if (not self.uid_status):
-         hash = enc.pin_hash(new_pin, rand_salt)
-         new_uid_to_db(db=self.db, uid=self.uid, salt=rand_salt, hash=hash)
+         self.title2.setText("Registraion Successful, you may return to Home")
+         self.edit.setText("")
+      except AttributeError:
+         self.title2.setText("No RFID tag detected, please scan your tag")
 
-      self.title2.setText("Registraion Successful, you may return to Home")
-      self.edit.setText("")
       
    # This method is invoked by button click, it will be changed in the future.
    def home(self):
@@ -495,18 +514,18 @@ class manager(QWidget):
 
   
 def main():
-   currentExitCode = welcome.EXIT_CODE_REBOOT
-   while currentExitCode == welcome.EXIT_CODE_REBOOT:
-      app = QApplication(sys.argv)
-      screen = app.primaryScreen()
-      print('Screen: %s' % screen.name())
-      rect = screen.availableGeometry()
-      print('Available: %d x %d' % (rect.width(), rect.height()))
-      ex = welcome()
-      ex.show()
-      currentExitCode = app.exec_()
-      # sys.exit(app.exec_())
-      app = None
+   # currentExitCode = welcome.EXIT_CODE_REBOOT
+   # while currentExitCode == welcome.EXIT_CODE_REBOOT:
+   app = QApplication(sys.argv)
+   screen = app.primaryScreen()
+   print('Screen: %s' % screen.name())
+   rect = screen.availableGeometry()
+   print('Available: %d x %d' % (rect.width(), rect.height()))
+   ex = welcome()
+   ex.show()
+   # currentExitCode = app.exec_()
+   sys.exit(app.exec_())
+   # app = None
 
 
 if __name__ == '__main__':
