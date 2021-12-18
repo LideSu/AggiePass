@@ -34,4 +34,3 @@ def new_uid_to_db(
 
 if __name__ == '__main__':
     pass
-    

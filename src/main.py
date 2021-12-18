@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import encrypt_tools as enc
+import time
 from ard_comm import arduino_wr
 from registration import new_uid_to_db
 from PyQt5 import *
@@ -8,14 +9,34 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from threading import *
+from multiprocessing import Process
 from database import mydb as database
 from constant import database_name
 from authentication import login
- 
+from keyboard_simulator import  keyboard_to_device
+
 # global secret key
 secret_key = ''
 # timers = []
 current_uid = ''
+
+# class myThread(Thread):
+#    def __init__(self, *args, **kwargs):
+#       super(myThread, self).__init__(*args, **kwargs)
+#       self._stop = Event()
+
+#    def stop(self):
+#       self._stop.set()
+
+#    def stopped(self):
+#       return self._stop.is_set()
+
+#    def run(self):
+#       while True:
+#          if self.stopped():
+#             return
+#          self.target =
+
 
 # Define the welcome page.
 class welcome(QWidget):
@@ -47,7 +68,7 @@ class welcome(QWidget):
       self.edit.setFixedWidth(400)
       self.edit.setFixedHeight(40)
       self.edit.setStyleSheet(
-         "background-color: white; color: #800000; font: 14px; border-color: white")
+         "background-color: white; color: #9e0000; font: 14px; border-color: white")
       self.edit.setAlignment(Qt.AlignCenter)
       # Selects all the texts currently in the text box, so the new values will immediately replace the default.
       self.edit.selectAll()
@@ -55,21 +76,21 @@ class welcome(QWidget):
       # modify the stylesheet of submission button.
       self.button_submit.clicked.connect(self.submission)
       self.button_submit.setStyleSheet(
-         "background-color: white; color: #800000; font: bold 14px")
+         "background-color: white; color: #9e0000; font: bold 14px")
       self.button_submit.setFixedWidth(170)
       self.button_submit.setFixedHeight(60)
 
       # modify the stylesheet of registration button.
       self.button_register.clicked.connect(self.registration)
       self.button_register.setStyleSheet(
-         "background-color: white; color: #800000; font: bold 12px")
+         "background-color: white; color: #9e0000; font: bold 12px")
       self.button_register.setFixedWidth(80)
       self.button_register.setFixedHeight(30)
-      
+
       # modify the stylesheet of reset button.
       # self.button_reset.clicked.connect(self.reset)
       # self.button_reset.setStyleSheet(
-      #    "background-color: white; color: #800000; font: bold 12px")
+      #    "background-color: white; color: #9e0000; font: bold 12px")
       # self.button_reset.setFixedWidth(80)
       # self.button_reset.setFixedHeight(30)
 
@@ -83,7 +104,7 @@ class welcome(QWidget):
       # create a layout for the window, and then add the widgets to the layout.
       layout = QVBoxLayout(self)
       # layout.addLayout(layout_buttons)
-      layout.addWidget(self.button_register, alignment = Qt.AlignRight)
+      layout.addWidget(self.button_register, alignment=Qt.AlignRight)
       layout.addWidget(self.title, alignment=Qt.AlignCenter)
       layout.addWidget(self.title2, alignment=Qt.AlignCenter)
       layout.addWidget(self.title3, alignment=Qt.AlignCenter)
@@ -94,7 +115,7 @@ class welcome(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.setStyleSheet("background-color: #800000")
+      self.setStyleSheet("background-color: #9e0000")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
@@ -104,16 +125,19 @@ class welcome(QWidget):
       # timer.timeout.connect(self.scan)
       # timers.append(timer)
 
-      t1=Thread(target=self.scan)
-      t1.daemon = True
-      t1.start()
-      
+      self.t1 = Thread(target=self.scan)
+      self.t1.daemon = True
+      self.t1.start()
+   
+      # self.p1 = Process(target=self.scan)
+      # self.p1.start()
+
       # no registration window yet.
       self.reg = None
 
       # no management window yet.
       self.manage = None
-   
+
    # def reset(self):
    #    qApp.exit(welcome.EXIT_CODE_REBOOT)
 
@@ -126,13 +150,16 @@ class welcome(QWidget):
             # Forge the secret key and pass it to the password manager screen
             self.rand_str = self.rfid_card_data[1]
             global secret_key, current_uid
-            secret_key = enc.forge_secret_key(tag_random_str=self.rand_str, pin = self.edit.text())
+            secret_key = enc.forge_secret_key(
+                tag_random_str=self.rand_str, pin=self.edit.text())
             current_uid = self.uid
-            
+
             if self.manage == None:
                self.manage = manager()
                self.manage.show()
                self.close()
+               self.t1.join(0.5)
+               print("thread 1 alive: {}".format(self.t1.isAlive()))
                self = None
             else:
                self.manage.close()
@@ -142,15 +169,21 @@ class welcome(QWidget):
             self.edit.clear()
       except AttributeError:
          self.title2.setText("No RFID tag detected, please scan your tag")
-      
 
-      
    # This method is invoked by button click, it will be changed in the future.
+
    def registration(self):
       if self.reg == None:
          self.reg = registration()
          self.reg.show()
          self.close()
+         self.t1.join(0.5)
+         print("thread 1 alive: {}".format(self.t1.isAlive()))
+         # try:
+         #    self.p1.close()
+         # except:
+         #    pass
+
          self = None
       else:
          self.reg.close()
@@ -169,9 +202,6 @@ class welcome(QWidget):
          self.title2.setText('Could not find the user information, please REGISTER')
       else:
          self.title2.setText('RFID found, please enter PIN')
-      
-      # global timers
-      # timers.clear()
 
          
 # Define the registration page.
@@ -205,7 +235,7 @@ class registration(QWidget):
       self.edit.setFixedWidth(400)
       self.edit.setFixedHeight(40)
       self.edit.setStyleSheet(
-         "background-color: white; color: #800000; font: 14px; border-color: white")
+         "background-color: white; color: #9e0000; font: 14px; border-color: white")
       self.edit.setAlignment(Qt.AlignCenter)
       # Selects all the texts currently in the text box, so the new values will immediately replace the default.
       self.edit.selectAll()
@@ -213,14 +243,14 @@ class registration(QWidget):
       # modify the stylesheet of submission button.
       self.button_submit.clicked.connect(self.submission)
       self.button_submit.setStyleSheet(
-         "background-color: white; color: #800000; font: bold 14px")
+         "background-color: white; color: #9e0000; font: bold 14px")
       self.button_submit.setFixedWidth(170)
       self.button_submit.setFixedHeight(60)
 
       # modify the stylesheet of registration button.
       self.button_home.clicked.connect(self.home)
       self.button_home.setStyleSheet(
-         "background-color: white; color: #800000; font: bold 12px")
+         "background-color: white; color: #9e0000; font: bold 12px")
       self.button_home.setFixedWidth(80)
       self.button_home.setFixedHeight(30)
 
@@ -238,7 +268,7 @@ class registration(QWidget):
 
       # modify the stylesheet of the window
 
-      self.setStyleSheet("background-color: #800000")
+      self.setStyleSheet("background-color: #9e0000")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
@@ -248,10 +278,14 @@ class registration(QWidget):
       # timer.timeout.connect(self.scan)
       # timers.append(timer)
 
-      t2=Thread(target=self.scan)
-      t2.daemon = True
-      t2.start()
+      self.t2=Thread(target=self.scan)
+      self.t2.daemon = True
+      self.t2.start()
+      # self.t2.join()
      
+      # self.p2 = Process(target = self.scan)
+      # self.p2.start()
+
       # no home window yet.
       self.hm = None
 
@@ -298,18 +332,36 @@ class registration(QWidget):
             hash = enc.pin_hash(new_pin, rand_salt)
             new_uid_to_db(db=self.db, uid=self.uid, salt=rand_salt, hash=hash)
 
-         self.title2.setText("Registraion Successful, you may return to Home")
+         self.title2.setText("Registraion Successful, please go back to log in page")
          self.edit.setText("")
       except AttributeError:
          self.title2.setText("No RFID tag detected, please scan your tag")
-
       
+      # if self.hm == None:
+      #    self.hm = welcome()
+      #    self.hm.show()
+      #    time.sleep(2000)
+      #    self.close()
+      #    # self.t2.join(0.5)
+      #    # print(self.t2.isAlive())
+      #    # try:
+      #    #    self.p2.close()
+      #    # except:
+      #    #    print('An error occured')
+      #    #    pass
+      #    self = None
+      # else:
+      #    self.hm.close()
+      #    self.hm = None
+
    # This method is invoked by button click, it will be changed in the future.
    def home(self):
       if self.hm == None:
          self.hm = welcome()
          self.hm.show()
          self.close()
+         self.t2.join(1)
+         print("thread 2 alive: {}".format(self.t2.isAlive()))
          self = None
       else:
          self.hm.close()
@@ -352,22 +404,22 @@ class manager(QWidget):
 
       # modify the stylesheet of buttonS.
       self.button_home.clicked.connect(self.home)
-      self.button_home.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
+      self.button_home.setStyleSheet("background-color: white; color: #9e0000; font: bold 12px")
       self.button_home.setFixedWidth(80)
       self.button_home.setFixedHeight(30)
       
       self.button_add.clicked.connect(self.add)
-      self.button_add.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
+      self.button_add.setStyleSheet("background-color: white; color: #9e0000; font: bold 12px")
       self.button_add.setFixedWidth(80)
       self.button_add.setFixedHeight(30)
 
       self.button_delete.clicked.connect(self.delete)
-      self.button_delete.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
+      self.button_delete.setStyleSheet("background-color: white; color: #9e0000; font: bold 12px")
       self.button_delete.setFixedWidth(80)
       self.button_delete.setFixedHeight(30)
       
       self.button_export.clicked.connect(self.export)
-      self.button_export.setStyleSheet("background-color: white; color: #800000; font: bold 12px")
+      self.button_export.setStyleSheet("background-color: white; color: #9e0000; font: bold 12px")
       self.button_export.setFixedWidth(80)
       self.button_export.setFixedHeight(30)
 
@@ -391,7 +443,7 @@ class manager(QWidget):
       self.setLayout(layout)
 
       # modify the stylesheet of the window
-      self.setStyleSheet("background-color: #800000; QInputDialog{background-color:white}")
+      self.setStyleSheet("background-color: #9e0000; QInputDialog{background-color:white}")
       self.setWindowFlag(Qt.FramelessWindowHint)
       self.showMaximized()
 
@@ -437,7 +489,7 @@ class manager(QWidget):
       idx = 0
       for i in self.df.columns.values:
          new_header =  QTableWidgetItem(i)
-         new_header.setForeground(QColor(255, 255, 255))
+         new_header.setForeground(QColor('black'))
          self.tableWidget.setHorizontalHeaderItem(idx, new_header)
          idx += 1
 
@@ -461,7 +513,7 @@ class manager(QWidget):
       try:
          r = self.tableWidget.selectionModel().selectedRows()
          password = self.tableWidget.item(r[0].row(),2).text() # get the passowrd value based on the row number obtained above.
-         print(password)
+         keyboard_to_device(password)
       except IndexError:
          pass
 

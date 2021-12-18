@@ -79,7 +79,6 @@ def str_to_usb_hid_list(input_str: str):
             hid_list.append(NULL_CHAR*2+chr(keycode[0])+NULL_CHAR*5)
         hid_list.append(NULL_CHAR*8)
     
-    print(hid_list)
     return hid_list
 
 def hid_code_to_kb(report):
@@ -94,10 +93,8 @@ def keyboard_to_device(input_str):
     hid_list = str_to_usb_hid_list(input_str=input_str)
     for char in hid_list:
         hid_code_to_kb(char)
-        print(char)
 
 if __name__ == '__main__':
-    keyboard_to_device("pwd\n")
-
+    keyboard_to_device("Hello my name!")
 
 
